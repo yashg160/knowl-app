@@ -1,0 +1,17 @@
+{
+	schema: {
+		files: "api/src/**/*.gql",
+	},
+	query: {
+		files: [
+			{
+				match: "web-react/src/**/*.js",
+				parser: [
+					"EmbeddedQueryParser",
+					{ startTag: "Relay\\.QL`", endTag: "`" },
+				],
+				isRelay: true,
+			},
+		],
+	},
+}

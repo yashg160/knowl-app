@@ -31,5 +31,8 @@
       "prettier --write",
       "eslint --fix"
     ]
+  },
+  "dependencies": {
+    "@playlyfe/gql": "^2.6.2"
   }
 }
