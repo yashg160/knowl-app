@@ -1,0 +1,28 @@
+.introContent {
+	text-align: center;
+	h2 {
+		font-weight: 400;
+		margin-top: 32px;
+		margin-bottom: 0px;
+	}
+	span {
+		font-size: 1.286rem;
+	}
+
+	@media screen and (max-width: 600px) {
+		h2 {
+			max-width: 444px;
+		}
+	}
+
+	@media screen and (max-width: 767px) {
+		h2 {
+			max-width: 700px;
+		}
+	}
+
+	@media screen and (max-width: 1024px) {
+		h2 {
+		}
+	}
+}

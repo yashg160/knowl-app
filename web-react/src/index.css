@@ -1,5 +1,42 @@
 body {
-  margin: 0;
-  padding: 0;
-  font-family: sans-serif;
+	margin: 0;
+	padding: 0;
+	font-family: sans-serif;
+}
+
+.globalContainer {
+	width: 100%;
+	max-width: 1366px;
+	margin: 0px auto;
+	max-width: 1280px;
+}
+
+@media only screen and (min-width: 768px) and (max-width: 1023px) {
+	.globalContainer {
+		max-width: 992px;
+	}
+}
+
+@media only screen and (max-width: 767px) {
+	.globalContainer {
+		max-width: initial;
+	}
+}
+
+@media only screen and (max-width: 1366px) {
+	.globalContainer {
+		max-width: 1280px;
+	}
+}
+
+@media only screen and (min-width: 1367px) and (max-width: 1440px) {
+	.globalContainer {
+		max-width: 1366px;
+	}
+}
+
+@media only screen and (min-width: 1441px) {
+	.globalContainer {
+		max-width: 1440px;
+	}
 }
