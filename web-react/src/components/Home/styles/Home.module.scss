@@ -1,5 +1,6 @@
 .introContent {
 	text-align: center;
+	padding: 0px 32px;
 	h2 {
 		font-weight: 400;
 		margin-top: 32px;
@@ -7,6 +8,30 @@
 	}
 	span {
 		font-size: 1.286rem;
+	}
+
+	.introContentRowItem {
+		text-align: center;
+		padding: 32px 16px;
+		border-radius: 8px;
+		box-shadow: 0px 0px 16px rgba(0, 0, 0, 0.1);
+		display: flex;
+		flex-direction: column;
+		justify-content: flex-start;
+		align-items: center;
+
+		.iconContainer {
+			height: 88px;
+			width: 88px;
+			border-radius: 50%;
+			margin-left: auto;
+			margin-right: auto;
+			margin-bottom: 40px;
+			background-color: #ededed;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+		}
 	}
 
 	@media screen and (max-width: 600px) {
