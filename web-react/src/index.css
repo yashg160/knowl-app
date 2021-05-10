@@ -10,6 +10,10 @@ body {
 	margin: 0px auto;
 	max-width: 1280px;
 }
+body,
+html {
+	margin-bottom: 10000px;
+}
 
 @media only screen and (min-width: 768px) and (max-width: 1023px) {
 	.globalContainer {
@@ -39,4 +43,11 @@ body {
 	.globalContainer {
 		max-width: 1440px;
 	}
+}
+
+:root {
+	--primary-light: #e4f9f5;
+	--primary: #30e3ca;
+	--primary-dark: #11999e;
+	--secondary: #40514e;
 }
