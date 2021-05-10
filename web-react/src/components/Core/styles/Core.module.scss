@@ -1,7 +1,17 @@
-.button {
+@mixin ButtonBase {
 	border: none;
 	padding: 8px 24px !important;
 	height: auto;
-	background-color: var(--primary-dark);
+	background: var(--primary-dark);
 	color: white;
+}
+
+.btnPrimary {
+	@include ButtonBase();
+	background: var(--primary-dark);
+}
+
+.btnPrimary:hover {
+	@include ButtonBase();
+	background: var(--primary-dark-dark);
 }
