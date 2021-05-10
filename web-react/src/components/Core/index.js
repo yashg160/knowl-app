@@ -16,9 +16,16 @@ export const Navbar = () => {
   );
 };
 
-export const Button = (props) => {
+export const Button = ({ color = "primary", ...props }) => {
+  console.log("button", color, props);
   return (
-    <AntButton {...props} className={cx(styles.button)}>
+    <AntButton
+      {...props}
+      className={cx(
+        { [styles.btnPrimary]: color === "primary" },
+        { [styles.btnSecondary]: color === "secondary" }
+      )}
+    >
       {props.children}
     </AntButton>
   );
