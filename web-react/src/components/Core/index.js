@@ -1,5 +1,5 @@
 import React from "react";
-import { PageHeader, Button as AntButton } from "antd";
+import { PageHeader, Button as AntButton, Input as AntInput } from "antd";
 
 import cx from "classnames";
 import styles from "./styles/Core.module.scss";
@@ -17,7 +17,6 @@ export const Navbar = () => {
 };
 
 export const Button = ({ color = "primary", ...props }) => {
-  console.log("button", color, props);
   return (
     <AntButton
       {...props}
@@ -29,4 +28,8 @@ export const Button = ({ color = "primary", ...props }) => {
       {props.children}
     </AntButton>
   );
+};
+
+export const Input = (props) => {
+  return <AntInput {...props} className={cx(styles.inputBase)} />;
 };
