@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useMutation, gql } from "@apollo/client";
 
 import { Navbar, Button, Input } from "../Core";
 import { Typography, Row, Col, Alert } from "antd";
@@ -9,7 +10,19 @@ const { Text, Title } = Typography;
 import cx from "classnames";
 import styles from "./styles/SignUp.module.scss";
 
+const ADD_USER = gql`
+  mutation CreateUser($name: String!, $email: String!, $password: String!) {
+    createUser(name: $name, email: $email, password: $password) {
+      name
+      email
+      password
+    }
+  }
+`;
+
 function SignUp(props) {
+  const [createUser] = useMutation(ADD_USER);
+
   const [state, setState] = useState({
     loading: false,
     showAlert: false,
@@ -21,10 +34,6 @@ function SignUp(props) {
 
     const [nameInput, emailInput, passwordInput] = e.target;
 
-    const name = nameInput.value;
-    const email = emailInput.value;
-    const password = passwordInput.value;
-
     // API call to create a new user
     try {
       setState((prev) => ({
@@ -34,16 +43,25 @@ function SignUp(props) {
       }));
 
       // Call the GQL API
+      const result = await createUser({
+        variables: {
+          name: nameInput.value,
+          email: emailInput.value,
+          password: passwordInput.value,
+        },
+      });
+
+      console.log("result", result);
 
       // Move to the home screen
       props.history.push("/home");
     } catch (err) {
-      console.log(err);
+      console.error(err);
       setState((prev) => ({
         ...prev,
         loading: false,
         showAlert: true,
-        alertMessage: err.message,
+        alertMessage: "An error occurred. Please try again.",
       }));
     }
   }
