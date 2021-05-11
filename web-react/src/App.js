@@ -2,7 +2,7 @@ import React from "react";
 import "antd/dist/antd.css";
 import { Switch, Route, BrowserRouter as Router } from "react-router-dom";
 import Home from "./components/Home";
-import Register from "./components/Register";
+import SignUp from "./components/SignUp";
 
 export default function App() {
   return (
@@ -12,7 +12,7 @@ export default function App() {
           <div />
           <Switch>
             <Route exact path="/" component={Home} />
-            <Route exact path="/register" component={Register} />
+            <Route exact path="/register" component={SignUp} />
           </Switch>
         </main>
       </div>
