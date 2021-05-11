@@ -9,7 +9,7 @@ const { Text, Title } = Typography;
 import cx from "classnames";
 import styles from "./styles/SignUp.module.scss";
 
-function SignUp() {
+function SignUp(props) {
   const [state, setState] = useState({
     loading: false,
     showAlert: false,
@@ -34,6 +34,9 @@ function SignUp() {
       }));
 
       // Call the GQL API
+
+      // Move to the home screen
+      props.history.push("/home");
     } catch (err) {
       console.log(err);
       setState((prev) => ({
