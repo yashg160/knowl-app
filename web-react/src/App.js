@@ -3,6 +3,7 @@ import "antd/dist/antd.css";
 import { Switch, Route, BrowserRouter as Router } from "react-router-dom";
 import Home from "./components/Home";
 import SignUp from "./components/SignUp";
+import UserHome from "./components/UserHome";
 
 export default function App() {
   return (
@@ -13,6 +14,7 @@ export default function App() {
           <Switch>
             <Route exact path="/" component={Home} />
             <Route exact path="/register" component={SignUp} />
+            <Route exact path="/home" component={UserHome} />
           </Switch>
         </main>
       </div>
