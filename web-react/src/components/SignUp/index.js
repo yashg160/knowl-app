@@ -13,9 +13,15 @@ import styles from "./styles/SignUp.module.scss";
 const ADD_USER = gql`
   mutation CreateUser($name: String!, $email: String!, $password: String!) {
     createUser(name: $name, email: $email, password: $password) {
-      name
-      email
-      password
+      user {
+        name
+      }
+      error {
+        message
+      }
+      operation
+      code
+      status
     }
   }
 `;
@@ -42,7 +48,7 @@ function SignUp(props) {
         showAlert: false,
       }));
 
-      // Call the GQL API
+      // Call the GQL API to create the user
       const result = await createUser({
         variables: {
           name: nameInput.value,
@@ -53,6 +59,14 @@ function SignUp(props) {
 
       console.log("result", result);
 
+      if (result.data.createUser.status !== "OK") {
+        // An error occurred
+        console.log(result.data.createUser.code);
+        throw Error(result.data.createUser.error.message);
+      }
+
+      // Account was created, now sign the user in and get a jwt token
+
       // Move to the home screen
       props.history.push("/home");
     } catch (err) {
@@ -61,7 +75,7 @@ function SignUp(props) {
         ...prev,
         loading: false,
         showAlert: true,
-        alertMessage: "An error occurred. Please try again.",
+        alertMessage: err.message,
       }));
     }
   }
