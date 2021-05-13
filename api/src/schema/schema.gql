@@ -14,7 +14,11 @@ type User {
 }
 
 type Mutation {
-	createUser(name: String!, email: String!, password: String!): User!
+	createUser(
+		name: String!
+		email: String!
+		password: String!
+	): UserMutationResponse
 }
 
 type Query {
@@ -22,7 +26,58 @@ type Query {
 	user(_id: String!): User
 		@cypher(
 			statement: """
-			MATCH (u {_id: $_id}) RETURN u
+			MATCH (u: User {_id: $_id}) RETURN u
 			"""
 		)
+}
+
+"""
+Response for any mutation related to the user type
+User: The user that has been created or updated
+
+Rest of the fields complete from MutationResponse interface
+"""
+type UserMutationResponse implements MutationResponse {
+	error: Error
+	operation: String!
+	code: String!
+	status: String!
+	user: [User!]
+}
+
+"""
+User: The user that has been created or updated
+Error: If any error occurred, this will contain a value
+
+These values come from the Response interface
+Code: Error code to denote exactly what happened
+Operaton: What operation was being performed
+Status: Denoting if the operation was completed or resulted in an error
+"""
+interface MutationResponse implements Response {
+	error: Error
+	operation: String!
+	code: String!
+	status: String!
+}
+
+"""
+Message: The user side message to display
+Code: Error code to denote exactly what happened
+Operaton: What operation was being performed
+"""
+type Error {
+	message: String!
+}
+
+"""
+Interface is used to return the responses for mutations
+Code: Error code to denote exactly what happened
+Operaton: What operation was being performed
+Status: Denoting if the operation was completed or resulted in an error
+"""
+interface Response {
+	operation: String!
+	code: String!
+	status: String!
 }
