@@ -4,7 +4,7 @@ const resolvers = {
   Mutation: {
     createUser: async (parent, args, context, info) => {
       try {
-        const findCypher = "MATCH (n: User {name: 'Yash Gupta'}) RETURN n";
+        const findCypher = "MATCH (n: User {email: $email}) RETURN n";
         const findParams = {
           email: args.email,
         };
@@ -18,7 +18,7 @@ const resolvers = {
         if (existingUser.records.length > 0) {
           // This email already exists. Return with error.
           return {
-            user: null,
+            user: [],
             error: {
               message: "Email is already in use",
             },
@@ -39,7 +39,7 @@ const resolvers = {
 
         await (await context.driver.session()).run(createCypher, createParams);
         return {
-          user: createParams,
+          user: [createParams],
           error: null,
           code: "OK",
           operation: "OP_CREATE_USER",
@@ -47,7 +47,7 @@ const resolvers = {
         };
       } catch (err) {
         return {
-          user: null,
+          user: [],
           error: {
             message: "An error occurred",
           },
