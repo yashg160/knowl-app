@@ -13,7 +13,7 @@ export default function App() {
           <div />
           <Switch>
             <Route exact path="/" component={Home} />
-            <Route exact path="/register" component={SignUp} />
+            <Route exact path="/signup" component={SignUp} />
             <Route exact path="/home" component={UserHome} />
           </Switch>
         </main>

@@ -50,7 +50,7 @@ function Home() {
                 </Text>
 
                 <a
-                  href="/register"
+                  href="/signup"
                   style={{
                     textDecoration: "none",
                     outline: "none",
