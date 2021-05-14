@@ -1,6 +1,7 @@
 import { v4 as uuidv4 } from "uuid";
 import dotenv from "dotenv";
 import { findUserByEmail } from "../services/UserServices";
+import * as bcyrpt from "bcrypt";
 
 const jwt = require("jsonwebtoken");
 
@@ -35,13 +36,16 @@ const resolvers = {
           };
         }
 
+        const saltRounds = 10;
+        const hashedPassword = await bcyrpt.hash(args.password, saltRounds);
+
         const createCypher =
           "CREATE (n:User {_id: $_id, name: $name, email: $email, password: $password}) RETURN n";
         const createParams = {
           _id: uuidv4(),
           name: args.name,
           email: args.email,
-          password: args.password,
+          password: hashedPassword,
         };
 
         await (await context.driver.session()).run(createCypher, createParams);
@@ -77,7 +81,9 @@ const resolvers = {
             email: userData.email,
           };
 
-          const token = await jwt.sign(tokenPayload, process.env.JWT_SECRET);
+          const token = await jwt.sign(tokenPayload, process.env.JWT_SECRET, {
+            expiresIn: "7d",
+          });
 
           return {
             user: [tokenPayload],
