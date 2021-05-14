@@ -25,9 +25,26 @@ const ADD_USER = gql`
     }
   }
 `;
+const SIGN_IN_USER = gql`
+  mutation SignInUser($email: String!, $password: String!) {
+    signInUser(email: $email, password: $password) {
+      user {
+        name
+      }
+      error {
+        message
+      }
+      operation
+      code
+      status
+      token
+    }
+  }
+`;
 
 function SignUp(props) {
   const [createUser] = useMutation(ADD_USER);
+  const [signInUser] = useMutation(SIGN_IN_USER);
 
   const [state, setState] = useState({
     loading: false,
@@ -49,7 +66,7 @@ function SignUp(props) {
       }));
 
       // Call the GQL API to create the user
-      const result = await createUser({
+      const signUpUserResult = await createUser({
         variables: {
           name: nameInput.value,
           email: emailInput.value,
@@ -57,15 +74,33 @@ function SignUp(props) {
         },
       });
 
-      console.log("result", result);
+      console.log("signUpUserResult", signUpUserResult);
 
-      if (result.data.createUser.status !== "OK") {
+      if (signUpUserResult.data.createUser.status !== "OK") {
         // An error occurred
-        console.log(result.data.createUser.code);
-        throw Error(result.data.createUser.error.message);
+        console.log(signUpUserResult.data.createUser.code);
+        throw Error(signUpUserResult.data.createUser.error.message);
       }
 
       // Account was created, now sign the user in and get a jwt token
+      // Call the GQL API to sign the user in
+      const signInUserResult = await signInUser({
+        variables: {
+          email: emailInput.value,
+          password: passwordInput.value,
+        },
+      });
+
+      console.log("signInUserResult", signInUserResult);
+
+      if (signInUserResult.data.signInUser.status !== "OK") {
+        // An error occurred
+        console.log(signInUserResult.data.signInUser.code);
+        throw Error(signInUserResult.data.signInUser.error.message);
+      }
+
+      // Signed in successfully. Save token and proceed
+      localStorage.setItem("TOKEN", signInUserResult.data.signInUser.token);
 
       // Move to the home screen
       props.history.push("/home");
