@@ -1,4 +1,11 @@
 import { v4 as uuidv4 } from "uuid";
+import dotenv from "dotenv";
+import { findUserByEmail } from "../services/UserServices";
+
+const jwt = require("jsonwebtoken");
+
+// set environment variables from .env
+dotenv.config();
 
 const resolvers = {
   Mutation: {
@@ -46,6 +53,53 @@ const resolvers = {
           status: "OK",
         };
       } catch (err) {
+        return {
+          user: [],
+          error: {
+            message: "An error occurred",
+          },
+          code: "ER_SERVER",
+          operation: "OP_CREATE_USER",
+          status: "NOT_COMPLETE",
+        };
+      }
+    },
+    signInUser: async (parent, args, context, info) => {
+      try {
+        const user = await findUserByEmail(context, args);
+        if (user.length > 0) {
+          // User was found
+          // Create and sign a token. Send in response.
+          const userData = user[0]._fields[0].properties;
+          const tokenPayload = {
+            _id: userData._id,
+            name: userData.name,
+            email: userData.email,
+          };
+
+          const token = await jwt.sign(tokenPayload, process.env.JWT_SECRET);
+
+          return {
+            user: [tokenPayload],
+            error: null,
+            code: "OK",
+            operation: "OP_SIGN_IN_USER",
+            status: "OK",
+            token: token,
+          };
+        } else {
+          return {
+            user: [],
+            error: {
+              message: "No user with that email was found",
+            },
+            code: "ER_NODE_NOT_FOUND",
+            operation: "OP_SIGN_IN_USER",
+            status: "NOT_COMPLETE",
+          };
+        }
+      } catch (err) {
+        console.error(err);
         return {
           user: [],
           error: {
