@@ -32,6 +32,10 @@ export const Button = ({ color = "primary", ...props }) => {
   );
 };
 
+export const Space = (props) => {
+  return <div>{props.space.name}</div>;
+};
+
 export const Input = (props) => {
   return <AntInput {...props} className={cx(styles.inputBase)} />;
 };
