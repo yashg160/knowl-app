@@ -11,7 +11,7 @@ type User {
 	name: String!
 	email: String!
 	password: String!
-	categories: [Space] @relationship(type: "READING_SPACE", direction: OUT)
+	spaces: [Space] @relationship(type: "READING_SPACE", direction: OUT)
 }
 
 type Space {
