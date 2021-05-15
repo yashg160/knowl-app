@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+import { AuthenticationError } from "apollo-server-errors";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -18,17 +19,21 @@ export const findUserByEmail = async (context, args) => {
   return users.records;
 };
 
-export const findUserWithAuthToken = async (driver, token) => {
+export const findUserWithAuthToken = async (driver, authHeader) => {
   // Context is coming from the apollo server
   // Token is from the request headers
 
-  if (!token || !driver) {
-    return {};
+  if (!authHeader) {
+    return {
+      user: null,
+    };
   }
 
   try {
+    const token = authHeader.split(" ")[1];
+
     const decodedUser = await jwt.verify(token, process.env.JWT_SECRET);
-    console.log("Decoded", decodedUser);
+
     const findCypher = "MATCH (n: User {_id: $_id, email: $email}) RETURN n";
     const findParams = {
       email: decodedUser.email,
@@ -38,12 +43,23 @@ export const findUserWithAuthToken = async (driver, token) => {
     const users = await (await driver.session()).run(findCypher, findParams);
 
     if (users.records.length === 0) {
-      return {};
+      return {
+        user: null,
+      };
     } else {
-      console.log("User found", users.records[0]._fields[0].properties);
-      return {};
+      return {
+        user: users.records[0]._fields[0].properties,
+        jwt: token,
+        auth: {
+          isAuthenticated: true,
+          jwt: token,
+          roles: ["USER"],
+        },
+      };
     }
   } catch (err) {
-    return { error: err.message };
+    return {
+      user: null,
+    };
   }
 };

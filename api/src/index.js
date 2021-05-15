@@ -43,25 +43,34 @@ const neoSchema = new Neo4jGraphQL({ typeDefs, driver, resolvers });
  * generated resolvers to connect to the database.
  */
 const server = new ApolloServer({
-  context: ({ req, driver }) => {
-    // Get the token from the request header
-    const token = req.headers.authorization || "";
-    console.log("token apollo server", token);
-    findUserWithAuthToken(driver, token)
-      .then((user) => {
-        return {
-          driver,
-          driverConfig: { database: process.env.NEO4J_DATABASE || "neo4j" },
-          user,
-        };
-      })
-      .catch((err) => {
-        return {
-          driver,
-          driverConfig: { database: process.env.NEO4J_DATABASE || "neo4j" },
-          user: {},
-        };
-      });
+  context: async ({ req }) => {
+    try {
+      const authHeader = req.headers.authorization;
+
+      const result = await findUserWithAuthToken(driver, authHeader);
+
+      return {
+        driver,
+        driverConfig: { database: process.env.NEO4J_DATABASE || "neo4j" },
+        user: result.user,
+        jwt: result.jwt,
+        auth: {
+          ...result.auth,
+        },
+      };
+    } catch (err) {
+      return {
+        driver,
+        driverConfig: { database: process.env.NEO4J_DATABASE || "neo4j" },
+        user: null,
+        jwt: null,
+        auth: {
+          isAuthenticated: false,
+          roles: [],
+          jwt: null,
+        },
+      };
+    }
   },
   schema: neoSchema.schema,
   introspection: true,

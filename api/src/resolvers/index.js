@@ -70,6 +70,22 @@ const resolvers = {
     },
     signInUser: async (parent, args, context, info) => {
       try {
+        if (context.user) {
+          // User is already authenticated using the token. Return the data
+          console.log("returning already loggedin user");
+          return {
+            user: [
+              {
+                ...context.user,
+              },
+            ],
+            error: null,
+            code: "OK",
+            operation: "OP_SIGN_IN_USER",
+            status: "OK",
+          };
+        }
+
         const user = await findUserByEmail(context, args);
         if (user.length > 0) {
           // User was found
