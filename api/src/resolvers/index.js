@@ -162,6 +162,49 @@ const resolvers = {
       }
     },
   },
+  Query: {
+    getUser: async (parent, args, context, info) => {
+      try {
+        if (context.user) {
+          // User is already authenticated using the token. Return the data
+          console.log("returning already loggedin user");
+          return {
+            user: [
+              {
+                ...context.user,
+              },
+            ],
+            error: null,
+            code: "OK",
+            operation: "OP_GET_USER_USER",
+            status: "OK",
+          };
+        }
+
+        return {
+          user: [],
+          error: {
+            message: "No such user was found",
+          },
+          code: "ER_NODE_NOT_FOUND",
+          operation: "OP_GET_USER_USER",
+          status: "NOT_COMPLETE",
+        };
+      } catch (err) {
+        console.error(err);
+        return {
+          user: [],
+          error: {
+            message: "An error occurred",
+          },
+          code: "ER_SERVER",
+          operation: "OP_CREATE_USER",
+          status: "NOT_COMPLETE",
+        };
+      }
+    },
+    getSpaces: async (parent, args, context, info) => {},
+  },
 };
 
 export default resolvers;

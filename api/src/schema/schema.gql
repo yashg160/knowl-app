@@ -35,13 +35,8 @@ type Mutation {
 
 type Query {
 	userCount: Int! @cypher(statement: "MATCH (u:User) RETURN COUNT(u)")
-	user(_id: String!): User
-		@cypher(
-			statement: """
-			MATCH (u: User {_id: $_id}) RETURN u
-			"""
-		)
-	spaces: [Space]
+	getUser: UserMutationResponse
+	getSpaces: [Space]
 		@cypher(
 			statement: """
 			MATCH (s: Space) RETURN s
