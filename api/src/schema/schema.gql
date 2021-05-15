@@ -11,8 +11,18 @@ type User {
 	name: String!
 	email: String!
 	password: String!
+	categories: [Space] @relationship(type: "READING_SPACE", direction: OUT)
 }
 
+type Space {
+	_id: ID!
+	name: String!
+	users: [User] @relationship(type: "READING_SPACE", direction: IN)
+}
+
+"""
+createSpace: Only use sparingly for creating a new space if needed
+"""
 type Mutation {
 	createUser(
 		name: String!
@@ -20,6 +30,7 @@ type Mutation {
 		password: String!
 	): UserMutationResponse
 	signInUser(email: String!, password: String!): UserMutationResponse
+	createSpace(name: String!): GenericMutationResponse
 }
 
 type Query {
@@ -28,6 +39,12 @@ type Query {
 		@cypher(
 			statement: """
 			MATCH (u: User {_id: $_id}) RETURN u
+			"""
+		)
+	spaces: [Space]
+		@cypher(
+			statement: """
+			MATCH (s: Space) RETURN s
 			"""
 		)
 }
@@ -44,6 +61,14 @@ type UserMutationResponse implements MutationResponse {
 	code: String!
 	status: String!
 	user: [User]
+	token: String
+}
+
+type GenericMutationResponse implements MutationResponse {
+	error: Error
+	operation: String!
+	code: String!
+	status: String!
 	token: String
 }
 

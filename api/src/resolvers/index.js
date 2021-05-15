@@ -117,6 +117,34 @@ const resolvers = {
         };
       }
     },
+    createSpace: async (parent, args, context, info) => {
+      try {
+        const createCypher =
+          "CREATE (n:Space {_id: $_id, name: $name}) RETURN n";
+        const createParams = {
+          _id: uuidv4(),
+          name: args.name,
+        };
+
+        await (await context.driver.session()).run(createCypher, createParams);
+        return {
+          error: null,
+          code: "OK",
+          operation: "OP_CREATE_SPACE",
+          status: "OK",
+        };
+      } catch (err) {
+        console.error(err);
+        return {
+          error: {
+            message: "An error occurred",
+          },
+          code: "ER_SERVER",
+          operation: "OP_CREATE_SPACE",
+          status: "NOT_COMPLETE",
+        };
+      }
+    },
   },
 };
 
