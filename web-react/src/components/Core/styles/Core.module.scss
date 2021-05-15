@@ -16,6 +16,17 @@
 	background: var(--primary-dark-dark);
 }
 
+.btnSecondary {
+	@include ButtonBase();
+	background: var(--secondary);
+}
+
+.btnSecondary:hover,
+.btnSecondary:focus {
+	@include ButtonBase();
+	background: var(--secondary);
+}
+
 @mixin InputBase {
 	border-radius: 4px;
 }
@@ -28,6 +39,32 @@
 .inputBase:focus {
 	border-color: var(--primary);
 	box-shadow: 0 0 4px rgba(48, 227, 202, 30%);
+}
+
+.spaceWrapper {
+	margin: 8px;
+	padding: 8px 16px;
+	font-weight: 400;
+	font-size: 1rem;
+	border-radius: 32px;
+	background: var(--primary);
+	cursor: pointer;
+}
+
+.spaceWrapper:hover {
+	box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.3);
+}
+
+.spaceWrapper,
+.spaceWrapper span {
+	transition: 0.2s cubic-bezier(0.47, 0, 0.745, 0.715);
+}
+
+.spaceWrapperSelected {
+	background: var(--primary-dark);
+	span {
+		color: white !important;
+	}
 }
 
 .spinnerContainer {

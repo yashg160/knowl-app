@@ -5,6 +5,7 @@ import cx from "classnames";
 import styles from "./styles/Core.module.scss";
 
 import Spinner from "../../assets/spinner/ripple.gif";
+import Text from "antd/lib/typography/Text";
 
 export const Navbar = () => {
   return (
@@ -33,7 +34,15 @@ export const Button = ({ color = "primary", ...props }) => {
 };
 
 export const Space = (props) => {
-  return <div>{props.space.name}</div>;
+  return (
+    <div
+      className={cx(styles.spaceWrapper, {
+        [styles.spaceWrapperSelected]: props.selected,
+      })}
+    >
+      <Text>{props.space.name}</Text>
+    </div>
+  );
 };
 
 export const Input = (props) => {
