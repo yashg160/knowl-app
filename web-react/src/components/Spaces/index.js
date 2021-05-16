@@ -20,6 +20,9 @@ const Spaces = (props) => {
           space={space}
           key={index}
           selected={props.selectedSpaces.includes(space._id)}
+          onClick={() =>
+            props.onClick(space._id, props.selectedSpaces.includes(space._id))
+          }
         />
       ))}
     </div>

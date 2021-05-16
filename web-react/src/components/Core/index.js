@@ -39,6 +39,7 @@ export const Space = (props) => {
       className={cx(styles.spaceWrapper, {
         [styles.spaceWrapperSelected]: props.selected,
       })}
+      onClick={() => props.onClick()}
     >
       <Text>{props.space.name}</Text>
     </div>
