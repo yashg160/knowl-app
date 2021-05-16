@@ -38,13 +38,13 @@ function SignIn(props) {
       }
 
       // Signed in successfully. Save token, id and proceed
-      localStorage.setItem("TOKEN", data.signInUser.token);
+      // localStorage.setItem("TOKEN", data.signInUser.token);
 
       // Add a delay of 500ms to allow token to be set
       setTimeout(() => {
         // Move to the home screen
-        props.history.push("/home");
-      }, 5000);
+        // props.history.push("/home");
+      }, 3000);
     },
     onError: (err) => {
       setState((prev) => ({
@@ -87,7 +87,7 @@ function SignIn(props) {
     }
   };
 
-  if (userResult.loading || signInLoading) {
+  if (userResult.loading || signInLoading || state.loading) {
     return <FullScreenSpinner />;
   }
 
@@ -225,7 +225,7 @@ function SignIn(props) {
           </Row>
         </div>
       </div>
-      {state.loading && <FullScreenSpinner />}
+      {/* {state.loading && <FullScreenSpinner />} */}
     </>
   );
 }

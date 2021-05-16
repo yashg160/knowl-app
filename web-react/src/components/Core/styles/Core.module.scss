@@ -68,16 +68,17 @@
 }
 
 .spinnerContainer {
-	width: 100vw;
-	height: 100vh;
+	width: 100%;
+	max-width: 100vw;
+	height: calc(100vh - 73px);
 	z-index: 1000;
 	display: flex;
 	position: absolute;
 	align-items: center;
 	justify-content: center;
-	background: rgba(255, 255, 255, 0.95);
+	background: rgba(255, 255, 255, 0.85);
 }
 
 .spinnerContainer img {
-	width: 136px;
+	width: 112px;
 }
