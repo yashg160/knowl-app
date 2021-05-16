@@ -69,11 +69,42 @@ const resolvers = {
         };
       }
     },
+
+    createSpace: async (parent, args, context, info) => {
+      try {
+        const createCypher =
+          "CREATE (n:Space {_id: $_id, name: $name}) RETURN n";
+        const createParams = {
+          _id: uuidv4(),
+          name: args.name,
+        };
+
+        await (await context.driver.session()).run(createCypher, createParams);
+        return {
+          error: null,
+          code: "OK",
+          operation: "OP_CREATE_SPACE",
+          status: "OK",
+        };
+      } catch (err) {
+        console.error(err);
+        return {
+          error: {
+            message: "An error occurred",
+          },
+          code: "ER_SERVER",
+          operation: "OP_CREATE_SPACE",
+          status: "NOT_COMPLETE",
+        };
+      }
+    },
+  },
+  Query: {
     signInUser: async (parent, args, context, info) => {
       try {
         if (context.user) {
           // User is already authenticated using the token. Return the data
-          console.log("returning already loggedin user");
+          console.log("returning already loggedin user", context.user);
           return {
             user: [
               {
@@ -134,36 +165,6 @@ const resolvers = {
         };
       }
     },
-    createSpace: async (parent, args, context, info) => {
-      try {
-        const createCypher =
-          "CREATE (n:Space {_id: $_id, name: $name}) RETURN n";
-        const createParams = {
-          _id: uuidv4(),
-          name: args.name,
-        };
-
-        await (await context.driver.session()).run(createCypher, createParams);
-        return {
-          error: null,
-          code: "OK",
-          operation: "OP_CREATE_SPACE",
-          status: "OK",
-        };
-      } catch (err) {
-        console.error(err);
-        return {
-          error: {
-            message: "An error occurred",
-          },
-          code: "ER_SERVER",
-          operation: "OP_CREATE_SPACE",
-          status: "NOT_COMPLETE",
-        };
-      }
-    },
-  },
-  Query: {
     getUserSpaces: async (parent, args, context, info) => {
       try {
         // Run a query to find
@@ -206,45 +207,6 @@ const resolvers = {
       }
       // Get use from context
     },
-    // getUser: async (parent, args, context, info) => {
-    //   try {
-    //     if (context.user) {
-    //       // User is already authenticated using the token. Return the data
-    //       console.log("returning already loggedin user");
-    //       return {
-    //         user: [
-    //           {
-    //             ...context.user,
-    //           },
-    //         ],
-    //         error: null,
-    //         code: "OK",
-    //         operation: "OP_GET_USER_USER",
-    //         status: "OK",
-    //       };
-    //     }
-    //     return {
-    //       user: [],
-    //       error: {
-    //         message: "No such user was found",
-    //       },
-    //       code: "ER_NODE_NOT_FOUND",
-    //       operation: "OP_GET_USER_USER",
-    //       status: "NOT_COMPLETE",
-    //     };
-    //   } catch (err) {
-    //     console.error(err);
-    //     return {
-    //       user: [],
-    //       error: {
-    //         message: "An error occurred",
-    //       },
-    //       code: "ER_SERVER",
-    //       operation: "OP_CREATE_USER",
-    //       status: "NOT_COMPLETE",
-    //     };
-    //   }
-    // },
   },
 };
 

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { useMutation, gql } from "@apollo/client";
-
+import { useLazyQuery, useQuery } from "@apollo/client";
+import * as Queries from "../../queries";
 import { Navbar, Button, Input, FullScreenSpinner } from "../Core";
 import { Typography, Row, Col, Alert } from "antd";
 import { AiOutlineMail, AiOutlineLock } from "react-icons/ai";
@@ -10,58 +10,52 @@ const { Text, Title } = Typography;
 import cx from "classnames";
 import styles from "./styles/SignIn.module.scss";
 
-const SIGN_IN_USER = gql`
-  mutation SignInUser($email: String!, $password: String!) {
-    signInUser(email: $email, password: $password) {
-      user {
-        _id
-        name
-      }
-      error {
-        message
-      }
-      operation
-      code
-      status
-      token
-    }
-  }
-`;
-
 function SignIn(props) {
   const [state, setState] = useState({
     loading: false,
     showAlert: false,
-    alertMessage: "Nothing to show",
+    alertMessage: "An error occurred",
   });
 
-  const [signInUser] = useMutation(SIGN_IN_USER);
+  const userResult = useQuery(Queries.SIGN_IN_USER, {
+    variables: {
+      email: "",
+      password: "",
+    },
+  });
 
-  useEffect(() => {
-    attemptSignIn();
-  }, []);
+  // Call e GQL API to sign the user in
+  const [
+    attemptSignIn,
+    { signInLoading, signInError, signInData },
+  ] = useLazyQuery(Queries.SIGN_IN_USER, {
+    onCompleted: (data) => {
+      console.log("Result", data);
 
-  const attemptSignIn = async () => {
-    setState((prev) => ({ ...prev, loading: true }));
+      if (data.signInUser.status !== "OK") {
+        // An error occurred
+        throw Error(data.signInUser.message);
+      }
 
-    const signInUserResult = await signInUser({
-      variables: {
-        email: "",
-        password: "",
-      },
-    });
+      // Signed in successfully. Save token, id and proceed
+      localStorage.setItem("TOKEN", data.signInUser.token);
 
-    if (signInUserResult.data.signInUser.status !== "OK") {
-      // User was not already signed in
-      console.log(signInUserResult.data.signInUser.code);
-      setState((prev) => ({ ...prev, loading: false }));
-      return;
-    }
+      // Add a delay of 500ms to allow token to be set
+      setTimeout(() => {
+        // Move to the home screen
+        props.history.push("/home");
+      }, 5000);
+    },
+    onError: (err) => {
+      setState((prev) => ({
+        ...prev,
+        showAlert: true,
+        alertMessage: "Could not sign you in",
+      }));
+    },
+  });
 
-    // This point means user already has the token. So simply move to the user home page
-    props.history.push("/home");
-    return;
-  };
+  console.log(userResult);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -76,25 +70,12 @@ function SignIn(props) {
         showAlert: false,
       }));
 
-      // Call the GQL API to sign the user in
-      const signInUserResult = await signInUser({
+      attemptSignIn({
         variables: {
-          email: emailInput.value,
-          password: passwordInput.value,
+          email: /* emailInput.value */ "yashg160@gmail.com",
+          password: /* passwordInput.value */ "password",
         },
       });
-
-      if (signInUserResult.data.signInUser.status !== "OK") {
-        // An error occurred
-        console.log(signInUserResult.data.signInUser.code);
-        throw Error(signInUserResult.data.signInUser.error.message);
-      }
-
-      // Signed in successfully. Save token, id and proceed
-      localStorage.setItem("TOKEN", signInUserResult.data.signInUser.token);
-
-      // Move to the home screen
-      props.history.push("/home");
     } catch (err) {
       console.error(err);
       setState((prev) => ({
@@ -105,6 +86,16 @@ function SignIn(props) {
       }));
     }
   };
+
+  if (userResult.loading || signInLoading) {
+    return <FullScreenSpinner />;
+  }
+
+  // Loading complete. If sign in successfull, move the home screen
+  if (!userResult.error && userResult.data.signInUser.status === "OK") {
+    props.history.push("/home");
+    return <FullScreenSpinner />;
+  }
 
   return (
     <>
@@ -161,6 +152,7 @@ function SignIn(props) {
                           showAlert: false,
                         }))
                       }
+                      value="yashg160@gmail.com"
                     />
                     <Input
                       size="large"
@@ -175,6 +167,7 @@ function SignIn(props) {
                           showAlert: false,
                         }))
                       }
+                      value="password"
                     />
 
                     <Button
@@ -187,7 +180,7 @@ function SignIn(props) {
                       Sign In
                     </Button>
 
-                    {state.showAlert ? (
+                    {state.showAlert || userResult.error ? (
                       <Alert
                         message={state.alertMessage}
                         onClose={() =>

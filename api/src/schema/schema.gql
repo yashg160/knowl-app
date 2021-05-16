@@ -29,13 +29,12 @@ type Mutation {
 		email: String!
 		password: String!
 	): UserMutationResponse
-	signInUser(email: String!, password: String!): UserMutationResponse
 	createSpace(name: String!): GenericMutationResponse
 }
 
 type Query {
 	userCount: Int! @cypher(statement: "MATCH (u:User) RETURN COUNT(u)")
-	getUser: UserMutationResponse
+	signInUser(email: String!, password: String!): UserMutationResponse
 	getUserSpaces: UserMutationResponse
 	getSpaces: [Space]
 		@cypher(
