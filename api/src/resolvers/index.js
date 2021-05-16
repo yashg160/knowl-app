@@ -4,6 +4,8 @@ import { findUserByEmail } from "../services/UserServices";
 import * as bcyrpt from "bcrypt";
 import * as utils from "../utils";
 
+const lodArr = require("lodash/array");
+
 const jwt = require("jsonwebtoken");
 
 // set environment variables from .env
@@ -98,6 +100,96 @@ const resolvers = {
         };
       }
     },
+
+    changeUserSpaces: async (parent, args, context, info) => {
+      if (!context.user) {
+        return {
+          user: null,
+          error: {
+            message: "User is not authenticated",
+          },
+          code: "NOT_COMPLETE",
+          operation: "OP_CHANGE_USER_SPACES",
+          status: "NOT_COMPLETE",
+        };
+      }
+
+      // Update user's spaces selection
+      try {
+        // const session = await context.driver.session();
+        const user = context.user;
+
+        const session = await context.driver.session();
+        const alreadyReadingCypher = `MATCH (u:User {_id: $_id})-[r:READING_SPACE]->(s:Space) RETURN s`;
+        const alreadyReadingCypherParams = {
+          _id: user._id,
+        };
+
+        const alreadyReading = await session.run(
+          alreadyReadingCypher,
+          alreadyReadingCypherParams
+        );
+        const alreadyReadingSpaces = utils.formatUserSpacesData(
+          alreadyReading.records
+        );
+        const alreadyReadingSpaceIds = alreadyReadingSpaces.map(
+          (space) => space._id
+        );
+
+        // Find the newly added and deleted nodes
+        const deleted = lodArr.difference(
+          alreadyReadingSpaceIds,
+          args.spaceIds
+        );
+        const added = lodArr.difference(args.spaceIds, alreadyReadingSpaceIds);
+
+        // Create an array of promises for all deleted and added spaces
+        const promises = [
+          ...deleted.map(async (spaceId) => {
+            const session = await context.driver.session();
+
+            const deleteCypher = `MATCH (u: User {_id: $_id})-[r:READING_SPACE]->(s: Space {_id: $spaceId}) DELETE r`;
+            const deleteParams = {
+              _id: user._id,
+              spaceId: spaceId,
+            };
+
+            return session.run(deleteCypher, deleteParams);
+          }),
+          ...added.map(async (spaceId) => {
+            const session = await context.driver.session();
+
+            const addCypher = `MATCH (u: User),(s: Space) WHERE u._id=$_id and s._id=$spaceId CREATE (u)-[r: READING_SPACE]->(s) RETURN type(r)`;
+            const addParams = {
+              _id: user._id,
+              spaceId: spaceId,
+            };
+
+            return session.run(addCypher, addParams);
+          }),
+        ];
+
+        console.log("Promise length", promises.length);
+        await Promise.all(promises);
+
+        return {
+          error: null,
+          code: "OK",
+          operation: "OP_CHANGE_USER_SPACES",
+          status: "OK",
+        };
+      } catch (err) {
+        console.error(err);
+        return {
+          error: {
+            message: "An error occurred",
+          },
+          code: "ER_SERVER",
+          operation: "OP_CHANGE_USER_SPACES",
+          status: "NOT_COMPLETE",
+        };
+      }
+    },
   },
   Query: {
     signInUser: async (parent, args, context, info) => {
@@ -165,6 +257,7 @@ const resolvers = {
         };
       }
     },
+
     getUserSpaces: async (parent, args, context, info) => {
       try {
         // Run a query to find
