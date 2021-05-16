@@ -2,6 +2,7 @@ import { v4 as uuidv4 } from "uuid";
 import dotenv from "dotenv";
 import { findUserByEmail } from "../services/UserServices";
 import * as bcyrpt from "bcrypt";
+import * as utils from "../utils";
 
 const jwt = require("jsonwebtoken");
 
@@ -163,6 +164,48 @@ const resolvers = {
     },
   },
   Query: {
+    getUserSpaces: async (parent, args, context, info) => {
+      try {
+        // Run a query to find
+        // const findCypher =
+        //   "MATCH p = (u)-[r:READING_SPACE]->(s) WHERE u._id=$_id RETURN nodes(p)";
+        const findCypher =
+          "MATCH (u:User {_id: $_id})-[r:READING_SPACE]->(s:Space) RETURN s";
+        const findParams = {
+          _id: context.user._id,
+        };
+
+        const result = await (await context.driver.session()).run(
+          findCypher,
+          findParams
+        );
+        const spaces = utils.formatUserSpacesData(result.records);
+        // console.log("result", result.records[0]._fields);
+        return {
+          user: [
+            {
+              ...context.user,
+              spaces: spaces,
+            },
+          ],
+          error: null,
+          code: "OK",
+          operation: "OP_GET_USER_SPACES",
+          status: "OK",
+        };
+      } catch (err) {
+        console.log(err);
+        return {
+          error: {
+            message: "An error occurred",
+          },
+          code: "ER_SERVER",
+          operation: "OP_GET_USER_SPACES",
+          status: "NOT_COMPLETE",
+        };
+      }
+      // Get use from context
+    },
     // getUser: async (parent, args, context, info) => {
     //   try {
     //     if (context.user) {

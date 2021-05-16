@@ -1,5 +1,4 @@
 const jwt = require("jsonwebtoken");
-import { AuthenticationError } from "apollo-server-errors";
 import dotenv from "dotenv";
 
 dotenv.config();
