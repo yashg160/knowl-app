@@ -12,12 +12,57 @@ type User {
 	email: String!
 	password: String!
 	spaces: [Space] @relationship(type: "READING_SPACE", direction: OUT)
+	posts(first: Int = 0): [Post!]
+		@cypher(
+			statement: "MATCH (this)-[:WROTE]->(p:Post) ORDER BY p.updatedOn LIMIT $first RETURN p"
+		)
+	numPosts: Int
+		@cypher(statement: "MATCH (this)-[:WROTE]->(p:Post) RETURN count(p)")
+	answers(first: Int = 0): [Answer!]
+		@cypher(
+			statement: "MATCH (this)-[:WROTE]->(a:Answer) ORDER BY a.updatedOn LIMIT $first RETURN a"
+		)
+	numAnswers: Int
+		@cypher(statement: "MATCH (this)-[:WROTE]->(a:Answer) RETURN count(a)")
+	comments(first: Int = 0): [Comment!]
+		@cypher(
+			statement: "MATCH (this)-[:WROTE]->(c:Comment) ORDER BY c.updatedOn LIMIT $first RETURN c"
+		)
+	numComments: Int
+		@cypher(statement: "MATCH (this)-[:WROTE]->(c:Comment) RETURN count(c)")
 }
 
 type Space {
 	_id: ID!
 	name: String!
 	users: [User] @relationship(type: "READING_SPACE", direction: IN)
+}
+
+type Post {
+	_id: ID!
+	text: String!
+	answers: [Answer!]
+	updatedOn: DateTime
+	createdOn: DateTime!
+	postedBy: User! @relationship(type: "WROTE", direction: IN)
+}
+
+type Answer {
+	_id: ID!
+	text: String!
+	comments: [Comment!]
+	updatedOn: DateTime
+	createdOn: DateTime!
+	postedBy: User! @relationship(type: "WROTE", direction: IN)
+}
+
+type Comment {
+	_id: ID!
+	text: String!
+	comments: [Comment!]
+	updatedOn: DateTime
+	createdOn: DateTime!
+	postedBy: User! @relationship(type: "WROTE", direction: IN)
 }
 
 """
