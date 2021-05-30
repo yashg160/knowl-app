@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useLazyQuery, useQuery } from "@apollo/client";
 import * as Queries from "../../queries";
 import { Navbar, Button, Input, FullScreenSpinner } from "../Core";
@@ -17,6 +17,7 @@ function SignIn(props) {
     alertMessage: "An error occurred",
   });
 
+  // Attempt a initial sign in request to persist user session
   const userResult = useQuery(Queries.SIGN_IN_USER, {
     variables: {
       email: "",
@@ -38,13 +39,10 @@ function SignIn(props) {
       }
 
       // Signed in successfully. Save token, id and proceed
-      // localStorage.setItem("TOKEN", data.signInUser.token);
+      localStorage.setItem("TOKEN", data.signInUser.token);
 
-      // Add a delay of 500ms to allow token to be set
-      setTimeout(() => {
-        // Move to the home screen
-        // props.history.push("/home");
-      }, 3000);
+      // Move to home screen
+      props.history.push("/home");
     },
     onError: (err) => {
       setState((prev) => ({
@@ -70,6 +68,7 @@ function SignIn(props) {
         showAlert: false,
       }));
 
+      // TODO Change this before deployment
       attemptSignIn({
         variables: {
           email: /* emailInput.value */ "yashg160@gmail.com",
@@ -87,6 +86,7 @@ function SignIn(props) {
     }
   };
 
+  // If sign in request is in progress
   if (userResult.loading || signInLoading || state.loading) {
     return <FullScreenSpinner />;
   }
@@ -119,7 +119,12 @@ function SignIn(props) {
               <Title level={2} style={{ textAlign: "center", fontWeight: 500 }}>
                 Welcome Back
               </Title>
-              <Text style={{ textAlign: "center", fontSize: "1.414rem" }}>
+              <Text
+                style={{
+                  textAlign: "center",
+                  fontSize: "1.414rem",
+                }}
+              >
                 Sign in to your account
               </Text>
 
@@ -192,7 +197,10 @@ function SignIn(props) {
                         type="error"
                         showIcon
                         closable
-                        style={{ width: "100%", marginTop: "40px" }}
+                        style={{
+                          width: "100%",
+                          marginTop: "40px",
+                        }}
                       />
                     ) : null}
                   </Col>
@@ -225,7 +233,6 @@ function SignIn(props) {
           </Row>
         </div>
       </div>
-      {/* {state.loading && <FullScreenSpinner />} */}
     </>
   );
 }
