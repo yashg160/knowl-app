@@ -27,6 +27,14 @@
 	background: var(--secondary);
 }
 
+.btnTransparent {
+	background: none;
+}
+
+.btnTextDark {
+	color: var(--secondary);
+}
+
 @mixin InputBase {
 	border-radius: 4px;
 }

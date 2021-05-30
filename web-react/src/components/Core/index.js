@@ -7,7 +7,30 @@ import styles from "./styles/Core.module.scss";
 import Spinner from "../../assets/spinner/ripple.gif";
 import Text from "antd/lib/typography/Text";
 
-export const Navbar = () => {
+export const Navbar = ({ history, showDropdownMenu, showLogoutOption }) => {
+  const handleLogoutClick = () => {
+    localStorage.removeItem("TOKEN");
+    history.push("/");
+  };
+
+  const getExtraOptions = () => {
+    let options = [];
+    if (showLogoutOption) {
+      options.push(
+        <Button
+          transparent
+          shape="round"
+          textColor="dark"
+          onClick={() => handleLogoutClick()}
+        >
+          Logout
+        </Button>
+      );
+    }
+
+    return options;
+  };
+
   return (
     <PageHeader
       className="site-page-header-responsive"
@@ -15,17 +38,25 @@ export const Navbar = () => {
       style={{
         borderBottom: "#ededed 1px solid",
       }}
+      extra={getExtraOptions()}
     ></PageHeader>
   );
 };
 
-export const Button = ({ color = "primary", ...props }) => {
+export const Button = ({
+  color = "secondary",
+  transparent = false,
+  textColor = "light",
+  ...props
+}) => {
   return (
     <AntButton
       {...props}
       className={cx(
         { [styles.btnPrimary]: color === "primary" },
-        { [styles.btnSecondary]: color === "secondary" }
+        { [styles.btnSecondary]: color === "secondary" },
+        { [styles.btnTransparent]: transparent === true },
+        { [styles.btnTextDark]: textColor === "dark" }
       )}
     >
       {props.children}

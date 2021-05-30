@@ -61,7 +61,7 @@ function UserHome(props) {
 
   return (
     <>
-      <Navbar />
+      <Navbar showLogoutOption history={props.history} />
       <h1>Show popular questions and recommendations etc.</h1>
     </>
   );
