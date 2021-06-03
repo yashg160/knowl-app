@@ -1,0 +1,41 @@
+.headerWrapper {
+	width: 100%;
+	display: flex;
+	margin-top: 16px;
+	align-items: flex-end;
+	padding: 16px 16px 32px 16px;
+	justify-content: space-between;
+	border-bottom: 1px solid #ededed;
+
+	h1 {
+		margin: 0px;
+		font-weight: 500;
+	}
+}
+
+.contentWrapper {
+	padding: 8px 16px 32px 16px;
+	.contentContainer {
+		form {
+			.sectionTitle {
+				margin-top: 16px;
+				font-weight: 500;
+				margin-bottom: 0px;
+			}
+
+			.sectionDescription {
+				margin-bottom: 16px;
+			}
+
+			.sectionInput {
+				margin-top: 8px !important;
+			}
+
+			.submitInstructions {
+				color: rgba(0, 0, 0, 0.25);
+				margin-top: 8px;
+				width: 100%;
+			}
+		}
+	}
+}
