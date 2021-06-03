@@ -1,11 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { useQuery } from "@apollo/client";
+import { Typography } from "antd";
 
 import { Navbar, Button, Input, FullScreenSpinner } from "../Core";
 
 import * as Queries from "../../queries";
 
-import "./styles/UserHome.module.scss";
+import cx from "classnames";
+import styles from "./styles/UserHome.module.scss";
+import { PresetColorTypes } from "antd/lib/_util/colors";
+
+const { Title } = Typography;
 
 function UserHome(props) {
   // const [signInUser] = useMutation(Mutations.SIGN_IN_USER);
@@ -17,8 +22,6 @@ function UserHome(props) {
   });
 
   const userSpacesResult = useQuery(Queries.GET_USER_SPACES);
-  console.log("User result", userResult);
-  console.log("spaes result", userSpacesResult);
 
   const [state, setState] = useState({
     user: null,
@@ -62,7 +65,32 @@ function UserHome(props) {
   return (
     <>
       <Navbar showLogoutOption history={props.history} />
-      <h1>Show popular questions and recommendations etc.</h1>
+      <div className="globalContainer">
+        <div className={cx(styles.headerWrapper)}>
+          <Title>Top Questions</Title>
+          <a href="/askQuestion" className={cx(styles.unstyledHyperlink)}>
+            <Button
+              htmlType="submit"
+              color="primary"
+              shape="round"
+              disabled={state.loading}
+            >
+              Ask Question
+            </Button>
+          </a>
+        </div>
+        <div className={cx(styles.contentWrapper)}>
+          <Title
+            level={3}
+            style={{
+              marginTop: "32px",
+              fontWeight: 500,
+            }}
+          >
+            Here we will show relevant questions for the user
+          </Title>
+        </div>
+      </div>
     </>
   );
 }
