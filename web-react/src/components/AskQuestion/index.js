@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from "react";
 import * as Queries from "../../queries";
 import { useQuery, useLazyQuery } from "@apollo/client";
-import { Typography, Select } from "antd";
+import { Typography, Select, Input as AntInput } from "antd";
 
 import { Navbar, Button, Input, FullScreenSpinner } from "../Core";
 
 import cx from "classnames";
 import styles from "./styles/AskQuestion.module.scss";
 
-const { Title, Text } = Typography;
 const { Option } = Select;
+const { Title, Text } = Typography;
+const { TextArea } = AntInput;
 
 function AskQuestion(props) {
   const spacesResult = useQuery(Queries.GET_SPACES);
@@ -35,8 +36,16 @@ function AskQuestion(props) {
     }));
   };
 
-  const handleSpacesChange = (spaces) => {
-    console.log("selected spaces", spaces);
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    const [questionInput, descriptionInput, _] = event.target;
+  };
+
+  const handleSpacesChange = (selectedSpaces) => {
+    setFormData((state) => ({
+      ...state,
+      spaces: selectedSpaces,
+    }));
   };
 
   if (spacesResult.loading) {
@@ -52,7 +61,7 @@ function AskQuestion(props) {
         </div>
         <div className={cx(styles.contentWrapper)}>
           <div className={cx(styles.contentContainer)}>
-            <form>
+            <form onSubmit={(e) => handleSubmit(e)}>
               <Title level={3} className={cx(styles.sectionTitle)}>
                 Title
               </Title>
@@ -68,7 +77,9 @@ function AskQuestion(props) {
                 placeholder="e.g. Is there an R function finding the index of an element in a vector?"
                 onChange={(e) => handleQuestionChange(e.target.value)}
                 value={formData.question}
-                className={cx(styles.sectionInput)}
+                style={{
+                  marginTop: "8px",
+                }}
               />
 
               <Title level={3} className={cx(styles.sectionTitle)}>
@@ -78,7 +89,7 @@ function AskQuestion(props) {
                 Include all the information someone would need to answer your
                 question
               </Text>
-              <Input
+              <TextArea
                 size="large"
                 type="text"
                 name="description"
@@ -87,6 +98,8 @@ function AskQuestion(props) {
                 value={formData.description}
                 style={{
                   height: "320px",
+                  marginTop: "8px",
+                  textAlign: "start",
                 }}
                 className={cx(styles.sectionInput)}
               />
@@ -99,23 +112,27 @@ function AskQuestion(props) {
               </Text>
               <Select
                 defaultValue={[]}
+                value={formData.spaces}
                 menuItemSelectedIcon
                 mode="multiple"
-                // value={formData.spaces}
                 placeholder="e.g. Technology, Business, Food, Travel"
+                name="spaces"
                 style={{
                   width: "100%",
                   marginTop: "8px",
                 }}
-                name="spaces"
-                // onChange={(value) => handleSpacesChange(value)}
+                required
+                onChange={(value) => handleSpacesChange(value)}
+                optionFilterProp="value"
               >
                 {spacesResult.data.spaces.map((space) => (
-                  <Option key={space._id}>{space.name}</Option>
+                  <Option key={space._id} value={space._id}>
+                    {space.name}
+                  </Option>
                 ))}
               </Select>
               <Button
-                type="submit"
+                htmlType="submit"
                 shape="round"
                 color="primary"
                 style={{
