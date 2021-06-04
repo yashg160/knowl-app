@@ -190,6 +190,80 @@ const resolvers = {
         };
       }
     },
+
+    publishPost: async (parent, args, context, info) => {
+      if (!context.user) {
+        return {
+          user: null,
+          error: {
+            message: "User is not authenticated",
+          },
+          code: "NOT_COMPLETE",
+          operation: "OP_PUBLISH_POST",
+          status: "NOT_COMPLETE",
+        };
+      }
+
+      // Create a new post
+      try {
+        const user = context.user;
+
+        const session = await context.driver.session();
+
+        // Create the post
+        const createPostCypher =
+          "CREATE (p:Post {_id: $_id, title: $title, text: $text}) RETURN p";
+        const createPostParams = {
+          _id: uuidv4(),
+          title: args.title,
+          text: args.text,
+        };
+
+        await session.run(createPostCypher, createPostParams);
+
+        // Relate to the user
+        const createRelationCypher =
+          "MATCH (u: User), (p: Post) WHERE u._id=$_userId AND p._id=$_postId CREATE (u)-[r:WROTE]->(p) RETURN type(r)";
+        const createRelationParams = {
+          _userId: user._id,
+          _postId: createPostParams._id,
+        };
+
+        await session.run(createRelationCypher, createRelationParams);
+
+        const promises = args.spaceIds.map(async (spaceId) => {
+          // Create new session for each associated space id
+          const createRelationSession = await context.driver.session();
+
+          const createCypher =
+            "MATCH (s: Space), (q: Post) WHERE s._id=$_spaceId AND q._id=$_postId CREATE (s)-[r:BELONGS_IN]->(q) RETURN type(r)";
+          const createParams = {
+            _postId: createPostParams._id,
+            _spaceId: spaceId,
+          };
+
+          return createRelationSession.run(createCypher, createParams);
+        });
+        const publishResults = await Promise.all(promises);
+        console.log("results", publishResults);
+        return {
+          error: null,
+          code: "OK",
+          operation: "OP_PUBLISH_POST",
+          status: "OK",
+        };
+      } catch (err) {
+        console.error(err);
+        return {
+          error: {
+            message: "An error occurred",
+          },
+          code: "ER_SERVER",
+          operation: "OP_PUBLISH_POST",
+          status: "NOT_COMPLETE",
+        };
+      }
+    },
   },
   Query: {
     signInUser: async (parent, args, context, info) => {

@@ -36,14 +36,17 @@ type Space {
 	_id: ID!
 	name: String!
 	users: [User] @relationship(type: "READING_SPACE", direction: IN)
+	posts: [Post] @relationship(type: "BELONGS_IN", direction: OUT)
 }
 
 type Post {
 	_id: ID!
-	text: String!
-	answers: [Answer!]
+	title: String!
+	text: String
+	answers: [Answer!] @relationship(type: "ANSWERS", direction: OUT)
 	updatedOn: DateTime
 	createdOn: DateTime!
+	spaces: [Space!] @relationship(type: "BELONGS_IN", direction: IN)
 	postedBy: User! @relationship(type: "WROTE", direction: IN)
 }
 
@@ -53,6 +56,7 @@ type Answer {
 	comments: [Comment!]
 	updatedOn: DateTime
 	createdOn: DateTime!
+	post: Post! @relationship(type: "ANSWERS", direction: IN)
 	postedBy: User! @relationship(type: "WROTE", direction: IN)
 }
 
@@ -67,6 +71,8 @@ type Comment {
 
 """
 createSpace: Only use sparingly for creating a new space if needed
+changeUserSpace: Update spaces for this signed in user
+publishPost: Create a new post
 """
 type Mutation {
 	createUser(
@@ -76,6 +82,11 @@ type Mutation {
 	): UserMutationResponse
 	createSpace(name: String!): GenericMutationResponse
 	changeUserSpaces(spaceIds: [String!]): UserMutationResponse
+	publishPost(
+		title: String!
+		text: String
+		spaceIds: [String!]
+	): GenericMutationResponse
 }
 
 type Query {
