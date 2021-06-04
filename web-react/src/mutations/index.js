@@ -15,3 +15,16 @@ export const CHANGE_USER_SPACES = gql`
     }
   }
 `;
+
+export const PUBLISH_POST = gql`
+  mutation PublishPost($title: String!, $text: String, $spaceIds: [String!]) {
+    publishPost(title: $title, text: $text, spaceIds: $spaceIds) {
+      error {
+        message
+      }
+      operation
+      status
+      code
+    }
+  }
+`;

@@ -22,7 +22,7 @@ export default function App() {
             <Route exact path="/signin" component={SignIn} />
             <Route exact path="/home" component={UserHome} />
             <Route exact path="/askQuestion" component={AskQuestion} />
-            <Route exact path="/spaces" component={UserSpaces} />
+            <Route exact path="/selectSpaces" component={UserSpaces} />
           </Switch>
         </main>
       </div>

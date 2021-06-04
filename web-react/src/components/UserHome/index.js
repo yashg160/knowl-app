@@ -8,7 +8,6 @@ import * as Queries from "../../queries";
 
 import cx from "classnames";
 import styles from "./styles/UserHome.module.scss";
-import { PresetColorTypes } from "antd/lib/_util/colors";
 
 const { Title } = Typography;
 
@@ -58,7 +57,7 @@ function UserHome(props) {
     !userSpacesResult.data.getUserSpaces.user[0].spaces ||
     !userSpacesResult.data.getUserSpaces.user[0].spaces.length === 0
   ) {
-    props.history.push("/spaces");
+    props.history.push("/selectSpaces");
     return null;
   }
 
