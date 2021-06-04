@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import * as Queries from "../../queries";
-import { useQuery, useLazyQuery } from "@apollo/client";
-import { Typography, Select, Input as AntInput } from "antd";
+import * as Mutations from "../../mutations";
+import { useQuery, useMutation } from "@apollo/client";
+import { Typography, Select, Input as AntInput, Alert } from "antd";
 
 import { Navbar, Button, Input, FullScreenSpinner } from "../Core";
 
@@ -14,38 +15,125 @@ const { TextArea } = AntInput;
 
 function AskQuestion(props) {
   const spacesResult = useQuery(Queries.GET_SPACES);
+  const [publishPost] = useMutation(Mutations.PUBLISH_POST);
 
   const [formData, setFormData] = useState({
     question: "",
     description: "",
     spaces: [],
   });
-  const [loading, setLoading] = useState(false);
+
+  const [state, setState] = useState({
+    loading: false,
+    alertMessage: "Nothing to show",
+    showAlert: false,
+    alertType: "error",
+  });
 
   const handleQuestionChange = (question) => {
-    setFormData((state) => ({
-      ...state,
+    setFormData((form) => ({
+      ...form,
       question: question,
     }));
   };
 
   const handleDescriptionChange = (description) => {
-    setFormData((state) => ({
-      ...state,
+    setFormData((form) => ({
+      ...form,
       description: description,
     }));
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
+
+    const validationResult = validateData();
+
+    try {
+      if (validationResult.length !== 0) {
+        // Errors are present
+        setState((state) => ({
+          ...state,
+          loading: false,
+          showAlert: true,
+          alertMessage: validationResult,
+          alertType: "error",
+        }));
+        return;
+      }
+    } catch (err) {
+      setState((state) => ({
+        ...state,
+        loading: false,
+        showAlert: true,
+        alertMessage: "An error occurred!",
+        alertType: "error",
+      }));
+      return;
+    }
+
+    setState((state) => ({
+      ...state,
+      showAlert: true,
+      alertType: "success",
+      alertMessage: "Question posted successfully!",
+    }));
     const [questionInput, descriptionInput, _] = event.target;
+
+    try {
+      const publishPostResult = await publishPost({
+        variables: {
+          title: questionInput.value,
+          text: descriptionInput.value,
+          spaceIds: formData.spaces,
+        },
+      });
+
+      if (publishPostResult.data.publishPost.code !== "OK") {
+        throw Error(publishPostResult.data.publishPost.error.message);
+      }
+
+      // Post created successfully
+
+      setState((state) => ({
+        ...state,
+        showAlert: true,
+        alertType: "success",
+        alertMessage: "Question posted successfully!",
+      }));
+
+      setTimeout(() => {
+        props.history.push("/home");
+      }, 1000);
+    } catch (err) {
+      console.log(err);
+      setState((state) => ({
+        ...state,
+        loading: false,
+        showAlert: false,
+        alertMessage: "An error occurred. Could not post your question!",
+      }));
+    }
   };
 
   const handleSpacesChange = (selectedSpaces) => {
-    setFormData((state) => ({
-      ...state,
+    setFormData((form) => ({
+      ...form,
       spaces: selectedSpaces,
     }));
+  };
+
+  const validateData = () => {
+    if (formData.question === "") {
+      return "Question title is a required field";
+    }
+    if (formData.description === "") {
+      return "Question description is a required field";
+    }
+    if (formData.spaces.length === 0) {
+      return "Select at least 1 space for the question";
+    }
+    return "";
   };
 
   if (spacesResult.loading) {
@@ -80,6 +168,7 @@ function AskQuestion(props) {
                 style={{
                   marginTop: "8px",
                 }}
+                disabled={state.loading}
               />
 
               <Title level={3} className={cx(styles.sectionTitle)}>
@@ -101,6 +190,7 @@ function AskQuestion(props) {
                   marginTop: "8px",
                   textAlign: "start",
                 }}
+                disabled={state.loading}
                 className={cx(styles.sectionInput)}
               />
 
@@ -124,6 +214,7 @@ function AskQuestion(props) {
                 required
                 onChange={(value) => handleSpacesChange(value)}
                 optionFilterProp="value"
+                disabled={state.loading}
               >
                 {spacesResult.data.spaces.map((space) => (
                   <Option key={space._id} value={space._id}>
@@ -138,6 +229,7 @@ function AskQuestion(props) {
                 style={{
                   marginTop: "40px",
                 }}
+                disabled={state.loading}
               >
                 Publish Question
               </Button>
@@ -146,6 +238,21 @@ function AskQuestion(props) {
                 This will publish your questions and make it live
               </p>
             </form>
+            {state.showAlert && (
+              <Alert
+                message={state.alertMessage}
+                onClose={() =>
+                  setState((prev) => ({
+                    ...prev,
+                    showAlert: false,
+                  }))
+                }
+                type={state.alertType}
+                showIcon
+                closable
+                style={{ marginTop: "40px" }}
+              />
+            )}
           </div>
         </div>
       </div>
