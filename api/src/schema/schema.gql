@@ -43,6 +43,7 @@ type Post {
 	_id: ID!
 	title: String!
 	text: String
+	label: String!
 	answers: [Answer!] @relationship(type: "ANSWERS", direction: OUT)
 	updatedOn: DateTime
 	createdOn: DateTime!
@@ -52,9 +53,10 @@ type Post {
 
 type Answer {
 	_id: ID!
+	votes: Int
+	label: String!
 	text: String!
 	updatedOn: DateTime
-	votes: Int
 	createdOn: DateTime!
 	post: Post! @relationship(type: "ANSWERS", direction: IN)
 	postedBy: User! @relationship(type: "WROTE", direction: IN)
@@ -87,6 +89,7 @@ type Mutation {
 		text: String
 		spaceIds: [String!]
 	): GenericMutationResponse
+	createAnswer(questionId: String!, text: String!): GenericMutationResponse
 }
 
 type Query {

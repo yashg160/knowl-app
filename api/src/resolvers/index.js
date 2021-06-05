@@ -212,11 +212,13 @@ const resolvers = {
 
         // Create the post
         const createPostCypher =
-          "CREATE (p:Post {_id: $_id, title: $title, text: $text}) RETURN p";
+          "CREATE (p:Post {_id: $_id, title: $title, text: $text, label: $label, createdOn: $createdOn}) RETURN p";
         const createPostParams = {
           _id: uuidv4(),
-          title: args.title,
           text: args.text,
+          title: args.title,
+          label: "question",
+          createdOn: new Date().toISOString(),
         };
 
         await session.run(createPostCypher, createPostParams);
@@ -260,6 +262,84 @@ const resolvers = {
           },
           code: "ER_SERVER",
           operation: "OP_PUBLISH_POST",
+          status: "NOT_COMPLETE",
+        };
+      }
+    },
+
+    createAnswer: async (parent, args, context, info) => {
+      if (!context.user) {
+        return {
+          user: null,
+          error: {
+            message: "User is not authenticated",
+          },
+          code: "NOT_COMPLETE",
+          operation: "OP_PUBLISH_POST",
+          status: "NOT_COMPLETE",
+        };
+      }
+      try {
+        const user = context.user;
+
+        const session = await context.driver.session();
+
+        const createAnswerCypher =
+          "CREATE (a:Answer {_id: $_id, text: $text, votes: 0, label: $label, createdOn: $createdOn}) RETURN a";
+        const createAnswerParams = {
+          _id: uuidv4(),
+          label: "answer",
+          text: args.text,
+          createdOn: new Date().toISOString(),
+        };
+
+        await session.run(createAnswerCypher, createAnswerParams);
+
+        // Create the relationships
+        const firstPromise = async () => {
+          const newSession = await context.driver.session();
+          const createAnswerPostRelation =
+            "MATCH (a: Answer), (p: Post) WHERE a._id=$_answerId AND p._id=$_postId CREATE (a)<-[r:ANSWERS]-(p) RETURN type(r)";
+          const createAnswerPostRelationParams = {
+            _postId: args.questionId,
+            _answerId: createAnswerParams._id,
+          };
+          return newSession.run(
+            createAnswerPostRelation,
+            createAnswerPostRelationParams
+          );
+        };
+
+        const secondPromise = async () => {
+          const newSession = await context.driver.session();
+          const createAnswerUserRelation =
+            "MATCH (a: Answer), (u: User) WHERE a._id=$_answerId AND u._id=$_userId CREATE (a)<-[r:WROTE]-(u) RETURN type(r)";
+          const createAnswerUserRelationParams = {
+            _answerId: createAnswerParams._id,
+            _userId: user._id,
+          };
+          return newSession.run(
+            createAnswerUserRelation,
+            createAnswerUserRelationParams
+          );
+        };
+
+        await Promise.all([firstPromise(), secondPromise()]);
+
+        return {
+          error: null,
+          code: "OK",
+          operation: "OP_CREATE_ANSWER",
+          status: "OK",
+        };
+      } catch (err) {
+        console.error(err);
+        return {
+          error: {
+            message: "An error occurred",
+          },
+          code: "ER_SERVER",
+          operation: "OP_CREATE_ANSWER",
           status: "NOT_COMPLETE",
         };
       }
