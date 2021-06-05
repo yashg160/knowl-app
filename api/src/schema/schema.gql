@@ -1,6 +1,7 @@
 scalar Point
 scalar DateTime
 scalar PointInput
+scalar Integer
 
 """
 User will also contain spaces[], comments[], answers[], questions[]
@@ -43,6 +44,7 @@ type Post {
 	_id: ID!
 	title: String!
 	text: String
+	votes: Int
 	label: String!
 	answers: [Answer!] @relationship(type: "ANSWERS", direction: OUT)
 	updatedOn: DateTime
@@ -102,6 +104,7 @@ type Query {
 			MATCH (s: Space) RETURN s
 			"""
 		)
+	getQuestionAnswers(questionId: String!): [Answer]
 }
 
 """

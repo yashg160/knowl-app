@@ -350,7 +350,6 @@ const resolvers = {
       try {
         if (context.user) {
           // User is already authenticated using the token. Return the data
-          console.log("returning already loggedin user", context.user);
           return {
             user: [
               {
@@ -453,6 +452,44 @@ const resolvers = {
         };
       }
       // Get use from context
+    },
+
+    getQuestionAnswers: async (parent, args, context, info) => {
+      try {
+        const user = context.user;
+
+        const session = await context.driver.session();
+
+        const getAnswersCypher =
+          "MATCH (Post {_id: $_postId})-[:ANSWERS]->(answer:Answer)<-[:WROTE]-(user:User) RETURN answer, user ORDER BY answer.votes ASC";
+        const getAnswersParams = {
+          _postId: args.questionId,
+        };
+        const queryResult = await session.run(
+          getAnswersCypher,
+          getAnswersParams
+        );
+        const results = queryResult.records.map((record) => {
+          return {
+            ...record._fields[0].properties,
+            votes: record._fields[0].properties.votes.low,
+            postedBy: {
+              ...record._fields[1].properties,
+            },
+          };
+        });
+        return results;
+      } catch (err) {
+        console.log(err);
+        return {
+          error: {
+            message: "An error occurred",
+          },
+          code: "ER_SERVER",
+          operation: "OP_QUESTION_ANSWERS",
+          status: "NOT_COMPLETE",
+        };
+      }
     },
   },
 };
