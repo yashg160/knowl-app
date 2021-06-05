@@ -47,3 +47,15 @@ export const GET_USER_SPACES = gql`
     }
   }
 `;
+
+export const GET_QUESTION = gql`
+  query GetQuestion($_id: ID!) {
+    posts(where: { _id: $_id }) {
+      title
+      text
+      answers {
+        text
+      }
+    }
+  }
+`;

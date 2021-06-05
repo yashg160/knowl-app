@@ -53,8 +53,8 @@ type Post {
 type Answer {
 	_id: ID!
 	text: String!
-	comments: [Comment!]
 	updatedOn: DateTime
+	votes: Int
 	createdOn: DateTime!
 	post: Post! @relationship(type: "ANSWERS", direction: IN)
 	postedBy: User! @relationship(type: "WROTE", direction: IN)
