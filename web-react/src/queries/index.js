@@ -53,8 +53,25 @@ export const GET_QUESTION = gql`
     posts(where: { _id: $_id }) {
       title
       text
-      answers {
-        text
+      votes
+      postedBy {
+        _id
+        name
+      }
+    }
+  }
+`;
+
+export const GET_QUESTION_ANSWERS = gql`
+  query GetQuestionAnswers($questionId: String!) {
+    getQuestionAnswers(questionId: $questionId) {
+      _id
+      text
+      votes
+      updatedOn
+      createdOn
+      postedBy {
+        name
       }
     }
   }
