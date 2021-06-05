@@ -2,23 +2,27 @@ import React, { useState, useEffect } from "react";
 
 import * as Queries from "../../queries";
 import * as Mutations from "../../mutations";
-import { useLazyQuery, useQuery } from "@apollo/client";
+import { useLazyQuery, useMutation, useQuery } from "@apollo/client";
 
 import cx from "classnames";
-import { Typography } from "antd";
+import { Typography, Modal, Input } from "antd";
 import styles from "./styles/Question.module.scss";
-import { Navbar, Button, Input, FullScreenSpinner } from "../Core";
+import { Navbar, Button, FullScreenSpinner } from "../Core";
 
 const { Title } = Typography;
+const { TextArea } = Input;
 
 function QuestionPost(props) {
   const questionId = props.match.params.id;
 
   const [state, setState] = useState({
     error: false,
+    newAnswer: "",
     question: null,
     loading: false,
     notFound: false,
+    modalVisible: false,
+    modalLoading: false,
   });
 
   const [getQuestion] = useLazyQuery(Queries.GET_QUESTION, {
@@ -48,9 +52,9 @@ function QuestionPost(props) {
       _id: questionId,
     },
   });
-
+  const [createAnswer] = useMutation(Mutations.CREATE_ANSWER);
   useEffect(() => {
-    setState((state) => ({ ...state, loading: true }));
+    // setState((state) => ({ ...state, loading: true }));
     getQuestion();
   }, []);
 
@@ -68,10 +72,44 @@ function QuestionPost(props) {
     const token = localStorage.getItem("TOKEN");
 
     if (token) {
-      // props.history.push('/aksQuestion');
-      // TODO Handle answering
+      setState((state) => ({
+        ...state,
+        modalVisible: true,
+      }));
     } else {
       props.history.push("/signup");
+    }
+  };
+
+  const handleSubmitAnswer = async () => {
+    if (state.newAnswer === "") {
+      return;
+    }
+
+    setState((state) => ({
+      ...state,
+      modalLoading: true,
+    }));
+
+    const createAnswerResult = await createAnswer({
+      variables: {
+        questionId: questionId,
+        text: state.newAnswer,
+      },
+    });
+
+    if (createAnswerResult.data.createAnswer.status !== "OK") {
+      // Error occurred. Handle error state later
+      setState((state) => ({
+        ...state,
+        modalLoading: false,
+      }));
+    } else {
+      setState((state) => ({
+        ...state,
+        loading: true,
+      }));
+      props.history.push("/home");
     }
   };
 
@@ -118,6 +156,45 @@ function QuestionPost(props) {
           </Title>
         </div>
       </div>
+      <Modal
+        title="Add an Answer"
+        visible={state.modalVisible}
+        onOk={() => handleSubmitAnswer()}
+        confirmLoading={state.modalLoading}
+        onCancel={() =>
+          setState((state) => ({
+            ...state,
+            modalVisible: false,
+            modalLoading: false,
+          }))
+        }
+        cancelButtonProps={{
+          disabled: state.modalLoading,
+          className: cx(styles.answerModalCancelButton),
+        }}
+        okButtonProps={{
+          className: cx(styles.answerModalOkButton),
+        }}
+        cancelText="Back"
+        closable={!state.modalLoading}
+        maskClosable={!state.modalLoading}
+      >
+        <Title level={4} className={cx(styles.answerModalBodyHeading)}>
+          {state.question.title}
+        </Title>
+        <TextArea
+          value={state.newAnswer}
+          onChange={(e) =>
+            setState((state) => ({
+              ...state,
+              newAnswer: e.target.value,
+            }))
+          }
+          rows={6}
+          className={cx(styles.answerModalBodyInput)}
+          placeholder="Write an answer that is correct, to the point and free of jargon. Back it up with numbers, statistics and facts wherever needed..."
+        />
+      </Modal>
     </>
   );
 }

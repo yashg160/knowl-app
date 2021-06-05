@@ -32,3 +32,30 @@
 .contentWrapper {
 	padding: 0px 16px;
 }
+
+.answerModal {
+	&BodyHeading {
+		font-weight: 400 !important;
+	}
+
+	&BodyInput {
+		margin-top: 16px;
+		width: 100%;
+	}
+
+	&CancelButton {
+		border-radius: 32px;
+		&:hover {
+			color: var(--primary-dark);
+			border-color: var(--primary-dark);
+		}
+	}
+
+	&OkButton {
+		border-radius: 32px;
+		background: var(--primary-dark);
+		&:hover {
+			background: var(--primary-dark-dark);
+		}
+	}
+}

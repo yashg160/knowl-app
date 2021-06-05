@@ -28,3 +28,16 @@ export const PUBLISH_POST = gql`
     }
   }
 `;
+
+export const CREATE_ANSWER = gql`
+  mutation CreateAnswer($questionId: String!, $text: String!) {
+    createAnswer(questionId: $questionId, text: $text) {
+      error {
+        message
+      }
+      operation
+      status
+      code
+    }
+  }
+`;
