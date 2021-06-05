@@ -1,0 +1,55 @@
+.answers {
+	padding: 16px;
+
+	&Item {
+		width: 100%;
+		border-bottom: 2px solid rgb(240, 240, 240);
+		padding: 24px 0px;
+
+		&Content {
+			width: 100%;
+			display: flex;
+			justify-content: flex-start;
+			align-items: flex-start;
+
+			.votesWrapper {
+				text-align: center;
+				h2 {
+					font-weight: 500;
+					margin-bottom: 4px;
+				}
+			}
+			p {
+				margin-left: 32px;
+				font-size: 18px;
+			}
+		}
+
+		&Metadata {
+			width: 100%;
+			display: flex;
+			margin-top: 16px;
+			padding: 0px 16px;
+			align-items: flex-start;
+			justify-content: flex-end;
+
+			.authorWrapper {
+				padding: 16px;
+				border-radius: 8px;
+				background: rgb(232, 232, 232);
+				p {
+					margin: 0px;
+
+					&:first-child {
+						color: gray;
+						margin-bottom: 4px;
+					}
+				}
+			}
+		}
+
+		&:last-child {
+			border-bottom: none;
+		}
+	}
+}

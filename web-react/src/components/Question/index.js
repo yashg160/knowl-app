@@ -3,13 +3,14 @@ import React, { useState, useEffect } from "react";
 import * as Queries from "../../queries";
 import * as Mutations from "../../mutations";
 import { useLazyQuery, useMutation, useQuery } from "@apollo/client";
+import QuestionAnswers from "../QuestionAnswers";
 
 import cx from "classnames";
 import { Typography, Modal, Input } from "antd";
 import styles from "./styles/Question.module.scss";
 import { Navbar, Button, FullScreenSpinner } from "../Core";
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
 const { TextArea } = Input;
 
 function QuestionPost(props) {
@@ -62,7 +63,7 @@ function QuestionPost(props) {
     const token = localStorage.getItem("TOKEN");
 
     if (token) {
-      props.history.push("/aksQuestion");
+      props.history.push("/askQuestion");
     } else {
       props.history.push("/signup");
     }
@@ -140,24 +141,39 @@ function QuestionPost(props) {
               disabled={state.loading}
               onClick={() => handleAnswerQuestionClick()}
             >
-              Answer
+              Answer This Question
             </Button>
           </div>
         </div>
-        <div className={cx(styles.contentWrapper)}>
-          <Title
-            level={3}
-            style={{
-              marginTop: "32px",
-              fontWeight: 500,
-            }}
-          >
-            Most voted answer
-          </Title>
+        <div className={cx(styles.descriptionWrapper)}>
+          <div className={cx(styles.votesWrapper)}>
+            <Title type="secondary">
+              {state.question.votes ? state.question.votes : 0}
+            </Title>
+            <Text type="secondary">Upvotes</Text>
+          </div>
+          <p>{state.question.text}</p>
         </div>
+        <div className={cx(styles.metadataWrapper)}>
+          <div className={cx(styles.authorWrapper)}>
+            <p>Asked by</p>
+            <p>{state.question.postedBy.name}</p>
+          </div>
+        </div>
+        <div className={cx(styles.answersWrapper)}>
+          <QuestionAnswers
+            params={{
+              questionId: questionId,
+            }}
+          />
+        </div>
+        <Title level={3} style={{ fontWeight: 400, marginTop: "32px" }}>
+          Not the answer you are looking for? Browse other questions tagged or
+          <a href="/askQuestion"> ask your own question</a>.
+        </Title>
       </div>
       <Modal
-        title="Add an Answer"
+        title="Add an answer for this question"
         visible={state.modalVisible}
         onOk={() => handleSubmitAnswer()}
         confirmLoading={state.modalLoading}
