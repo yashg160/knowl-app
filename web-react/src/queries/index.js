@@ -76,3 +76,23 @@ export const GET_QUESTION_ANSWERS = gql`
     }
   }
 `;
+
+export const GET_USER_RECOMMENDATIONS = gql`
+  query GetUserRecommendations {
+    getUserRecommendations {
+      questions {
+        _id
+        title
+        votes
+        createdOn
+        updatedOn
+        answerCount
+        spaces
+        author {
+          _id
+          name
+        }
+      }
+    }
+  }
+`;

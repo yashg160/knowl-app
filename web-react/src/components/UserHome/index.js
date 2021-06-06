@@ -2,7 +2,9 @@ import React, { useState, useEffect } from "react";
 import { useQuery } from "@apollo/client";
 import { Typography } from "antd";
 
-import { Navbar, Button, Input, FullScreenSpinner } from "../Core";
+import { Navbar, Button, FullScreenSpinner } from "../Core";
+
+import UserQuestion from "../UserQuestion";
 
 import * as Queries from "../../queries";
 
@@ -22,12 +24,18 @@ function UserHome(props) {
 
   const userSpacesResult = useQuery(Queries.GET_USER_SPACES);
 
+  const userRecommendationsResult = useQuery(Queries.GET_USER_RECOMMENDATIONS);
+
   const [state, setState] = useState({
     user: null,
     loading: false,
   });
 
-  if (state.loading || userSpacesResult.loading || userResult.loading) {
+  if (
+    userSpacesResult.loading ||
+    userResult.loading ||
+    userRecommendationsResult.loading
+  ) {
     return <FullScreenSpinner />;
   }
 
@@ -79,15 +87,11 @@ function UserHome(props) {
           </a>
         </div>
         <div className={cx(styles.contentWrapper)}>
-          <Title
-            level={3}
-            style={{
-              marginTop: "32px",
-              fontWeight: 500,
-            }}
-          >
-            Here we will show relevant questions for the user
-          </Title>
+          {userRecommendationsResult.data.getUserRecommendations.questions.map(
+            (questionItem) => (
+              <UserQuestion question={questionItem} key={questionItem._id} />
+            )
+          )}
         </div>
       </div>
     </>
