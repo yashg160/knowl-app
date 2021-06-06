@@ -95,6 +95,8 @@ type Mutation {
 }
 
 type Query {
+	getUserRecommendations: UserSuggestionsResponse
+	getQuestionAnswers(questionId: String!): [Answer]
 	userCount: Int! @cypher(statement: "MATCH (u:User) RETURN COUNT(u)")
 	signInUser(email: String!, password: String!): UserMutationResponse
 	getUserSpaces: UserMutationResponse
@@ -104,7 +106,31 @@ type Query {
 			MATCH (s: Space) RETURN s
 			"""
 		)
-	getQuestionAnswers(questionId: String!): [Answer]
+}
+
+type UserSuggestionsResponse implements Response {
+	questions: [PostResponse]!
+	error: Error
+	operation: String!
+	code: String!
+	status: String!
+}
+
+type PostResponse {
+	_id: String!
+	title: String!
+	text: String
+	votes: Int
+	author: PostAuthorResponse
+	createdOn: DateTime
+	updatedOn: DateTime
+	answerCount: Int
+	spaces: [String]
+}
+
+type PostAuthorResponse {
+	name: String!
+	_id: ID!
 }
 
 """

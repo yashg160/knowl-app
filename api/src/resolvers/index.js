@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import { findUserByEmail } from "../services/UserServices";
 import * as bcyrpt from "bcrypt";
 import * as utils from "../utils";
+import { addCatchUndefinedToSchema } from "graphql-tools";
 
 const lodArr = require("lodash/array");
 
@@ -491,7 +492,104 @@ const resolvers = {
         };
       }
     },
+    getUserRecommendations: async (parent, args, context, info) => {
+      try {
+        if (!context.user) {
+          return {
+            error: {
+              message: "User is not authenticated",
+            },
+            code: "NOT_COMPLETE",
+            operation: "OP_PUBLISH_POST",
+            status: "NOT_COMPLETE",
+          };
+        }
+
+        const user = context.user;
+        const session = await context.driver.session();
+
+        // Get the users's selected spaces
+        const spacesSearchCypher =
+          "MATCH (space:Space)<-[r:READING_SPACE]-(user:User {_id: $_userId}) RETURN space._id";
+        const spacesSearchParams = {
+          _userId: user._id,
+        };
+
+        const spacesResult = await session.run(
+          spacesSearchCypher,
+          spacesSearchParams
+        );
+
+        const spaceIds = spacesResult.records.map(
+          (record) => record._fields[0]
+        );
+
+        const promises = spaceIds.map(async (spaceId) => {
+          const newSession = await context.driver.session();
+          const searchCypher =
+            "MATCH (space:Space {_id: $_spaceId})-[r1:BELONGS_IN]->(post:Post)-[r2:ANSWERS]->(answer:Answer), (post)<-[r3:WROTE]-(author:User) RETURN post, author, count(answer), space.name";
+          const searchParams = {
+            _userId: user._id,
+            _spaceId: spaceId,
+          };
+          return newSession.run(searchCypher, searchParams);
+        });
+
+        const results = await Promise.all(promises);
+
+        // Iterate over results and process into the defined response format
+        let questionIdToQuestionMap = {};
+        results.map((result) => {
+          result.records.map((record) => {
+            const question = record._fields[0].properties;
+            const author = record._fields[1].properties;
+            const answerCount = record._fields[2].low;
+            const space = record._fields[3];
+
+            const answerData = {
+              ...question,
+              author: { ...author },
+              answerCount,
+              spaces: [space],
+            };
+
+            delete answerData.author.password;
+            delete answerData.author.email;
+
+            if (questionIdToQuestionMap[question._id] === undefined) {
+              questionIdToQuestionMap[question._id] = answerData;
+            } else {
+              questionIdToQuestionMap[question._id].spaces.push(space);
+            }
+          });
+        });
+
+        const userRecommendationsResult = Object.values(
+          questionIdToQuestionMap
+        );
+
+        console.log("user recommentdation result", userRecommendationsResult);
+        return {
+          questions: userRecommendationsResult,
+          error: null,
+          code: "OK",
+          operation: "OP_GET_USER_RECOMMENDATIONS",
+          status: "OK",
+        };
+      } catch (err) {
+        console.error(err);
+        return {
+          user: [],
+          error: {
+            message: "An error occurred",
+          },
+          code: "ER_SERVER",
+          operation: "OP_GET_USER_RECOMMENDATIONS",
+          status: "NOT_COMPLETE",
+        };
+      }
+    },
   },
 };
-
+("WHERE NOT user._id = author._id");
 export default resolvers;
