@@ -1,42 +1,22 @@
-import { ApolloClient, HttpLink, InMemoryCache } from '@apollo/client'
-import dotenv from 'dotenv'
-import fetch from 'node-fetch'
-import { getSeedMutations } from './seed-mutations'
+import dotenv from "dotenv";
+import neo4j from "neo4j-driver";
 
-dotenv.config()
+dotenv.config();
 
-const {
-  GRAPHQL_SERVER_HOST: host,
-  GRAPHQL_SERVER_PORT: port,
-  GRAPHQL_SERVER_PATH: path,
-} = process.env
-
-const uri = `http://${host}:${port}${path}`
-
-const client = new ApolloClient({
-  link: new HttpLink({ uri, fetch }),
-  cache: new InMemoryCache(),
-})
+const driver = neo4j.driver(
+  process.env.NEO4J_URI || "bolt://localhost:7687",
+  neo4j.auth.basic(
+    process.env.NEO4J_USER || "neo4j",
+    process.env.NEO4J_PASSWORD || "neo4j"
+  )
+);
 
 const runMutations = async () => {
-  const mutations = await getSeedMutations()
-
-  return Promise.all(
-    mutations.map(({ mutation, variables }) => {
-      return client
-        .mutate({
-          mutation,
-          variables,
-        })
-        .catch((e) => {
-          throw new Error(e)
-        })
-    })
-  )
-}
+  // TODO Call queries using faker data here.
+};
 
 runMutations()
   .then(() => {
-    console.log('Database seeded!')
+    console.log("Database seeded!");
   })
-  .catch((e) => console.error(e))
+  .catch((e) => console.error(e));
