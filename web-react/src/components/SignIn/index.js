@@ -71,8 +71,8 @@ function SignIn(props) {
       // TODO Change this before deployment
       attemptSignIn({
         variables: {
-          email: /* emailInput.value */ "yashg160@gmail.com",
-          password: /* passwordInput.value */ "password",
+          email: emailInput.value,
+          password: passwordInput.value,
         },
       });
     } catch (err) {
@@ -157,7 +157,6 @@ function SignIn(props) {
                           showAlert: false,
                         }))
                       }
-                      value="yashg160@gmail.com"
                     />
                     <Input
                       size="large"
@@ -172,7 +171,6 @@ function SignIn(props) {
                           showAlert: false,
                         }))
                       }
-                      value="password"
                     />
 
                     <Button
