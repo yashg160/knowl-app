@@ -492,6 +492,7 @@ const resolvers = {
         };
       }
     },
+
     getUserRecommendations: async (parent, args, context, info) => {
       try {
         if (!context.user) {
@@ -585,6 +586,78 @@ const resolvers = {
           },
           code: "ER_SERVER",
           operation: "OP_GET_USER_RECOMMENDATIONS",
+          status: "NOT_COMPLETE",
+        };
+      }
+    },
+
+    getUserProfile: async (parent, args, context, info) => {
+      try {
+        if (!context.user) {
+          return {
+            error: {
+              message: "User is not authenticated",
+            },
+            code: "NOT_COMPLETE",
+            operation: "OP_GET_USER_PROFILE",
+            status: "NOT_COMPLETE",
+          };
+        }
+
+        const user = context.user;
+        const session1 = await context.driver.session();
+
+        // Get the user data
+        const findUserCypher = `MATCH (u:User {_id: $_id}) RETURN u;`;
+        const findUserParams = {
+          _id: user._id,
+        };
+
+        const userResult = await session1.run(findUserCypher, findUserParams);
+
+        const session2 = await context.driver.session();
+
+        const findUserPostsCypher = `MATCH (u:User {_id: $_id})-[:WROTE]->(a) RETURN a;`;
+        const findUserPostsParams = {
+          _id: user._id,
+        };
+
+        const userPostsResult = await session2.run(
+          findUserPostsCypher,
+          findUserPostsParams
+        );
+
+        let userProfile = {
+          ...userResult.records[0]._fields[0].properties,
+        };
+
+        let postedAnswers = [],
+          postedQuestions = [];
+
+        userPostsResult.records.forEach((record) => {
+          console.log();
+          if (record._fields[0].properties.label === "answer") {
+            postedAnswers.push(record._fields[0].properties);
+          } else {
+            postedQuestions.push(record._fields[0].properties);
+          }
+        });
+
+        userProfile.posts = postedQuestions;
+        userProfile.answers = postedAnswers;
+        userProfile.numPosts = postedQuestions.length;
+        userProfile.numAnswers = postedAnswers.length;
+
+        return userProfile;
+      } catch (err) {
+        console.error(err);
+        return {
+          user: [],
+          error: {
+            message: "An error occurred",
+          },
+          code: "ER_SERVER",
+          operation: "OP_GET_USER_PROFILE",
           status: "NOT_COMPLETE",
         };
       }

@@ -5,72 +5,77 @@ scalar Integer
 
 """
 User will also contain spaces[], comments[], answers[], questions[]
-Drawback: Password is being stored as plain string. Not able to figure out JWT
 """
 type User {
-	_id: ID!
-	name: String!
-	email: String!
-	password: String!
-	spaces: [Space] @relationship(type: "READING_SPACE", direction: OUT)
-	posts(first: Int = 0): [Post!]
-		@cypher(
-			statement: "MATCH (this)-[:WROTE]->(p:Post) ORDER BY p.updatedOn LIMIT $first RETURN p"
-		)
-	numPosts: Int
-		@cypher(statement: "MATCH (this)-[:WROTE]->(p:Post) RETURN count(p)")
-	answers(first: Int = 0): [Answer!]
-		@cypher(
-			statement: "MATCH (this)-[:WROTE]->(a:Answer) ORDER BY a.updatedOn LIMIT $first RETURN a"
-		)
-	numAnswers: Int
-		@cypher(statement: "MATCH (this)-[:WROTE]->(a:Answer) RETURN count(a)")
-	comments(first: Int = 0): [Comment!]
-		@cypher(
-			statement: "MATCH (this)-[:WROTE]->(c:Comment) ORDER BY c.updatedOn LIMIT $first RETURN c"
-		)
-	numComments: Int
-		@cypher(statement: "MATCH (this)-[:WROTE]->(c:Comment) RETURN count(c)")
+  _id: ID!
+  name: String!
+  email: String!
+  password: String!
+  spaces: [Space] @relationship(type: "READING_SPACE", direction: OUT)
+  posts(userId: String): [Post!]
+    @cypher(
+      statement: "MATCH (User {_id: $userId})-[:WROTE]->(p:Post) RETURN p ORDER BY p.updatedOn;"
+    )
+  answers(userId: String): [Answer!]
+    @cypher(
+      statement: "MATCH (User {_id: $userId})-[:WROTE]->(a:Answer)  RETURN a ORDER BY a.updatedOn"
+    )
+  comments(userId: String): [Comment!]
+    @cypher(
+      statement: "MATCH (User {_id: $userId})-[:WROTE]->(c:Comment) RETURN c ORDER BY c.updatedOn"
+    )
+  numPosts(userId: String): Int
+    @cypher(
+      statement: "MATCH (User {_id: $userId})-[:WROTE]->(p:Post) RETURN count(p);"
+    )
+  numAnswers(userId: String): Int
+    @cypher(
+      statement: "MATCH (User {_id: $userId})-[:WROTE]->(a:Answer) RETURN count(a.low);"
+    )
+  numComments(userId: String): Int
+    @cypher(
+      statement: "MATCH (User {_id: $userId})-[:WROTE]->(c:Comment) RETURN count(c.low);"
+    )
 }
 
 type Space {
-	_id: ID!
-	name: String!
-	users: [User] @relationship(type: "READING_SPACE", direction: IN)
-	posts: [Post] @relationship(type: "BELONGS_IN", direction: OUT)
+  _id: ID!
+  name: String!
+  users: [User] @relationship(type: "READING_SPACE", direction: IN)
+  posts: [Post] @relationship(type: "BELONGS_IN", direction: OUT)
 }
 
 type Post {
-	_id: ID!
-	title: String!
-	text: String
-	votes: Int
-	label: String!
-	answers: [Answer!] @relationship(type: "ANSWERS", direction: OUT)
-	updatedOn: DateTime
-	createdOn: DateTime!
-	spaces: [Space!] @relationship(type: "BELONGS_IN", direction: IN)
-	postedBy: User! @relationship(type: "WROTE", direction: IN)
+  _id: ID!
+  title: String!
+  text: String
+  votes: Int
+  label: String!
+  answers: [Answer!] @relationship(type: "ANSWERS", direction: OUT)
+  updatedOn: DateTime
+  createdOn: DateTime!
+  spaces: [Space!] @relationship(type: "BELONGS_IN", direction: IN)
+  postedBy: User! @relationship(type: "WROTE", direction: IN)
 }
 
 type Answer {
-	_id: ID!
-	votes: Int
-	label: String!
-	text: String!
-	updatedOn: DateTime
-	createdOn: DateTime!
-	post: Post! @relationship(type: "ANSWERS", direction: IN)
-	postedBy: User! @relationship(type: "WROTE", direction: IN)
+  _id: ID!
+  votes: Int
+  label: String!
+  text: String!
+  updatedOn: DateTime
+  createdOn: DateTime!
+  post: Post! @relationship(type: "ANSWERS", direction: IN)
+  postedBy: User! @relationship(type: "WROTE", direction: IN)
 }
 
 type Comment {
-	_id: ID!
-	text: String!
-	comments: [Comment!]
-	updatedOn: DateTime
-	createdOn: DateTime!
-	postedBy: User! @relationship(type: "WROTE", direction: IN)
+  _id: ID!
+  text: String!
+  comments: [Comment!]
+  updatedOn: DateTime
+  createdOn: DateTime!
+  postedBy: User! @relationship(type: "WROTE", direction: IN)
 }
 
 """
@@ -79,58 +84,67 @@ changeUserSpace: Update spaces for this signed in user
 publishPost: Create a new post
 """
 type Mutation {
-	createUser(
-		name: String!
-		email: String!
-		password: String!
-	): UserMutationResponse
-	createSpace(name: String!): GenericMutationResponse
-	changeUserSpaces(spaceIds: [String!]): UserMutationResponse
-	publishPost(
-		title: String!
-		text: String
-		spaceIds: [String!]
-	): GenericMutationResponse
-	createAnswer(questionId: String!, text: String!): GenericMutationResponse
+  createUser(
+    name: String!
+    email: String!
+    password: String!
+  ): UserMutationResponse
+  createSpace(name: String!): GenericMutationResponse
+  changeUserSpaces(spaceIds: [String!]): UserMutationResponse
+  publishPost(
+    title: String!
+    text: String
+    spaceIds: [String!]
+  ): GenericMutationResponse
+  createAnswer(questionId: String!, text: String!): GenericMutationResponse
 }
 
 type Query {
-	getUserRecommendations: UserSuggestionsResponse
-	getQuestionAnswers(questionId: String!): [Answer]
-	userCount: Int! @cypher(statement: "MATCH (u:User) RETURN COUNT(u)")
-	signInUser(email: String!, password: String!): UserMutationResponse
-	getUserSpaces: UserMutationResponse
-	getSpaces: [Space]
-		@cypher(
-			statement: """
-			MATCH (s: Space) RETURN s
-			"""
-		)
+  getUserRecommendations: UserSuggestionsResponse
+  getQuestionAnswers(questionId: String!): [Answer]
+  userCount: Int! @cypher(statement: "MATCH (u:User) RETURN COUNT(u)")
+  signInUser(email: String!, password: String!): UserMutationResponse
+  getUserSpaces: UserMutationResponse
+  getSpaces: [Space]
+    @cypher(
+      statement: """
+      MATCH (s: Space) RETURN s
+      """
+    )
+  getUserProfile(userId: ID!): User
+}
+
+type UserProfileResponse implements Response {
+  profile: User
+  error: Error
+  operation: String!
+  code: String!
+  status: String!
 }
 
 type UserSuggestionsResponse implements Response {
-	questions: [PostResponse]!
-	error: Error
-	operation: String!
-	code: String!
-	status: String!
+  questions: [PostResponse]!
+  error: Error
+  operation: String!
+  code: String!
+  status: String!
 }
 
 type PostResponse {
-	_id: String!
-	title: String!
-	text: String
-	votes: Int
-	author: PostAuthorResponse
-	createdOn: DateTime
-	updatedOn: DateTime
-	answerCount: Int
-	spaces: [String]
+  _id: String!
+  title: String!
+  text: String
+  votes: Int
+  author: PostAuthorResponse
+  createdOn: DateTime
+  updatedOn: DateTime
+  answerCount: Int
+  spaces: [String]
 }
 
 type PostAuthorResponse {
-	name: String!
-	_id: ID!
+  name: String!
+  _id: ID!
 }
 
 """
@@ -140,20 +154,20 @@ User: The user that has been created or updated
 Rest of the fields complete from MutationResponse interface
 """
 type UserMutationResponse implements MutationResponse {
-	error: Error
-	operation: String!
-	code: String!
-	status: String!
-	user: [User]
-	token: String
+  error: Error
+  operation: String!
+  code: String!
+  status: String!
+  user: [User]
+  token: String
 }
 
 type GenericMutationResponse implements MutationResponse {
-	error: Error
-	operation: String!
-	code: String!
-	status: String!
-	token: String
+  error: Error
+  operation: String!
+  code: String!
+  status: String!
+  token: String
 }
 
 """
@@ -166,11 +180,11 @@ Operaton: What operation was being performed
 Status: Denoting if the operation was completed or resulted in an error
 """
 interface MutationResponse implements Response {
-	error: Error
-	operation: String!
-	code: String!
-	status: String!
-	token: String
+  error: Error
+  operation: String!
+  code: String!
+  status: String!
+  token: String
 }
 
 """
@@ -179,7 +193,7 @@ Code: Error code to denote exactly what happened
 Operaton: What operation was being performed
 """
 type Error {
-	message: String!
+  message: String!
 }
 
 """
@@ -189,7 +203,7 @@ Operaton: What operation was being performed
 Status: Denoting if the operation was completed or resulted in an error
 """
 interface Response {
-	operation: String!
-	code: String!
-	status: String!
+  operation: String!
+  code: String!
+  status: String!
 }

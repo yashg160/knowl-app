@@ -96,3 +96,24 @@ export const GET_USER_RECOMMENDATIONS = gql`
     }
   }
 `;
+
+export const GET_USER_PROFILE = gql`
+  query GetUserProfile($userId: ID!) {
+    getUserProfile(userId: $userId) {
+      _id
+      name
+      email
+      posts {
+        _id
+        title
+        votes
+      }
+      answers {
+        _id
+        text
+      }
+      numPosts
+      numAnswers
+    }
+  }
+`;
