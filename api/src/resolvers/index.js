@@ -3,7 +3,6 @@ import dotenv from "dotenv";
 import { findUserByEmail } from "../services/UserServices";
 import * as bcyrpt from "bcrypt";
 import * as utils from "../utils";
-import { addCatchUndefinedToSchema } from "graphql-tools";
 
 const lodArr = require("lodash/array");
 
@@ -394,6 +393,52 @@ const resolvers = {
         };
       }
     },
+
+    updateQuestion: async (parent, args, context, info) => {
+      if (!context.user) {
+        return {
+          user: null,
+          error: {
+            message: "User is not authenticated",
+          },
+          code: "NOT_COMPLETE",
+          operation: "OP_UPDATE_POST",
+          status: "NOT_COMPLETE",
+        };
+      }
+
+      try {
+        const session = await context.driver.session();
+
+        const updateCypher =
+          "MATCH (n:Post {_id: $postId}) SET n.title=$title, n.text=$text RETURN n";
+        const updateParams = {
+          postId: args.questionId,
+          title: args.title,
+          text: args.text,
+        };
+
+        await session.run(updateCypher, updateParams);
+
+        return {
+          error: null,
+          code: "OK",
+          operation: "OP_UPDATE_POST",
+          status: "OK",
+          user: [],
+        };
+      } catch (err) {
+        return {
+          error: {
+            message: "An error occurred",
+          },
+          code: "ER_SERVER",
+          operation: "OP_UPDATE_POST",
+          status: "NOT_COMPLETE",
+          user: [],
+        };
+      }
+    },
   },
   Query: {
     signInUser: async (parent, args, context, info) => {
@@ -684,7 +729,7 @@ const resolvers = {
           postedQuestions = [];
 
         userPostsResult.records.forEach((record) => {
-          console.log();
+          console.log(record._fields[0].properties);
           if (record._fields[0].properties.label === "answer") {
             postedAnswers.push(record._fields[0].properties);
           } else {

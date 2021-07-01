@@ -40,5 +40,60 @@
         text-align: center;
       }
     }
+
+    .userPosts {
+      margin-top: 32px;
+      width: 100%;
+
+      .post {
+        width: 100%;
+        cursor: pointer;
+        border-radius: 4px;
+        margin-bottom: 12px;
+        text-decoration: none;
+        padding: 12px 12px 12px 12px;
+        transition: 0.2s all ease-in-out;
+        border: 1px solid rgb(243, 243, 243);
+
+        &:last-child {
+          margin-bottom: 0px;
+        }
+
+        &:hover {
+          background: rgb(243, 243, 243);
+        }
+
+        .postText {
+          font-size: 16px;
+        }
+      }
+    }
+  }
+}
+
+.questionModal {
+  &BodyHeading {
+    font-weight: 400 !important;
+  }
+
+  &BodyInput {
+    margin-top: 16px;
+    width: 100%;
+  }
+
+  &CancelButton {
+    border-radius: 32px;
+    &:hover {
+      color: var(--primary-dark);
+      border-color: var(--primary-dark);
+    }
+  }
+
+  &OkButton {
+    border-radius: 32px;
+    background: var(--primary-dark);
+    &:hover {
+      background: var(--primary-dark-dark);
+    }
   }
 }

@@ -98,6 +98,11 @@ type Mutation {
   ): GenericMutationResponse
   createAnswer(questionId: String!, text: String!): GenericMutationResponse
   updateProfile(name: String!, email: String!): UserMutationResponse
+  updateQuestion(
+    title: String!
+    text: String!
+    questionId: ID!
+  ): GenericMutationResponse
 }
 
 type Query {

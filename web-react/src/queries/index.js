@@ -106,6 +106,7 @@ export const GET_USER_PROFILE = gql`
       posts {
         _id
         title
+        text
         votes
       }
       answers {

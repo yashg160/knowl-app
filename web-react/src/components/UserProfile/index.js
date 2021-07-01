@@ -3,9 +3,10 @@ import { decode } from "jsonwebtoken";
 import { useQuery, useMutation } from "@apollo/client";
 import cx from "classnames";
 
-import { Typography, Row, Col, Alert } from "antd";
+import { Typography, Modal, Input as AntInput } from "antd";
 
 const { Text, Title } = Typography;
+const { TextArea } = AntInput;
 
 import * as Queries from "../../queries";
 
@@ -17,6 +18,7 @@ import styles from "./styles/Profile.module.scss";
 
 function UserProfile(props) {
   const [updateUser] = useMutation(Mutations.UPDATE_PROFILE);
+  const [updateQuestion] = useMutation(Mutations.UPDATE_QUESTION);
   const userProfileResult = useQuery(Queries.GET_USER_PROFILE, {
     variables: {
       userId: props.match.params.userId,
@@ -30,6 +32,11 @@ function UserProfile(props) {
     allowEditProfile: false,
     loading: false,
     selectedSideItem: "EDIT_PROFILE",
+    modalVisible: false,
+    modalLoading: false,
+    editQuestionId: "",
+    editQuestionTitle: "",
+    editQuestionText: "",
   });
 
   const [name, setName] = useState("");
@@ -100,6 +107,38 @@ function UserProfile(props) {
       setState((state) => ({
         ...state,
         loading: false,
+        showError: true,
+        errorMessage: "An error occurred. Could not update your profile.",
+      }));
+    }
+  };
+
+  const handleSubmitEditQuestion = async () => {
+    setState((state) => ({
+      ...state,
+      modalLoading: true,
+    }));
+
+    try {
+      await updateQuestion({
+        variables: {
+          questionId: state.editQuestionId,
+          title: state.editQuestionTitle,
+          text: state.editQuestionText,
+        },
+      });
+
+      setState((state) => ({
+        ...state,
+        modalLoading: false,
+      }));
+
+      location.reload();
+    } catch (err) {
+      console.log(err);
+      setState((state) => ({
+        ...state,
+        modalLoading: false,
         showError: true,
         errorMessage: "An error occurred. Could not update your profile.",
       }));
@@ -227,11 +266,86 @@ function UserProfile(props) {
                     </Text>
                   </div>
                 </div>
+
+                <div className={cx(styles.userPosts)}>
+                  {userProfileResult.data.getUserProfile.posts.map(
+                    (post, index) => (
+                      <div
+                        key={post._id}
+                        className={cx(styles.post)}
+                        onClick={() =>
+                          setState((state) => ({
+                            ...state,
+                            modalVisible: true,
+                            editQuestionId: post._id,
+                            editQuestionTitle: post.title,
+                            editQuestionText: post.text,
+                          }))
+                        }
+                      >
+                        <Text className={cx(styles.postText)}>
+                          {post.title}
+                        </Text>
+                      </div>
+                    )
+                  )}
+                </div>
               </>
             )}
           </div>
         </div>
       </div>
+      <Modal
+        title="Edit this question"
+        visible={state.modalVisible}
+        onOk={() => handleSubmitEditQuestion()}
+        confirmLoading={state.modalLoading}
+        onCancel={() =>
+          setState((state) => ({
+            ...state,
+            modalVisible: false,
+            modalLoading: false,
+          }))
+        }
+        cancelButtonProps={{
+          disabled: state.modalLoading,
+          className: cx(styles.questionModalCancelButton),
+        }}
+        okButtonProps={{
+          className: cx(styles.questionModalOkButton),
+        }}
+        cancelText="Back"
+        closable={!state.modalLoading}
+        maskClosable={!state.modalLoading}
+      >
+        {/* <Title level={4} className={cx(styles.questionModalBodyHeading)}>
+          {state.question}
+        </Title> */}
+        <TextArea
+          value={state.editQuestionTitle}
+          onChange={(e) => {
+            setState((state) => ({
+              ...state,
+              editQuestionTitle: e.target.value,
+            }));
+          }}
+          rows={5}
+          className={cx(styles.questionModalBodyInput)}
+          placeholder="Edit this question....Do not submit an empty value."
+        />
+        <TextArea
+          value={state.editQuestionText}
+          onChange={(e) =>
+            setState((state) => ({
+              ...state,
+              editQuestionText: e.target.value,
+            }))
+          }
+          rows={10}
+          className={cx(styles.questionModalBodyInput)}
+          placeholder="Edit this question....Do not submit an empty value."
+        />
+      </Modal>
     </>
   );
 }

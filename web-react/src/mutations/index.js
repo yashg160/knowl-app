@@ -54,3 +54,16 @@ export const UPDATE_PROFILE = gql`
     }
   }
 `;
+
+export const UPDATE_QUESTION = gql`
+  mutation UpdateQuestion($title: String!, $text: String!, $questionId: ID!) {
+    updateQuestion(title: $title, text: $text, questionId: $questionId) {
+      error {
+        message
+      }
+      operation
+      status
+      code
+    }
+  }
+`;
