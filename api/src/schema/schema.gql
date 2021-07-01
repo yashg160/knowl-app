@@ -97,6 +97,7 @@ type Mutation {
     spaceIds: [String!]
   ): GenericMutationResponse
   createAnswer(questionId: String!, text: String!): GenericMutationResponse
+  updateProfile(name: String!, email: String!): UserMutationResponse
 }
 
 type Query {

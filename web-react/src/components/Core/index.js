@@ -1,4 +1,5 @@
 import React from "react";
+import { decode } from "jsonwebtoken";
 import { PageHeader, Button as AntButton, Input as AntInput } from "antd";
 
 import cx from "classnames";
@@ -7,10 +8,24 @@ import styles from "./styles/Core.module.scss";
 import Spinner from "../../assets/spinner/ripple.gif";
 import Text from "antd/lib/typography/Text";
 
-export const Navbar = ({ history, showDropdownMenu, showLogoutOption }) => {
+export const Navbar = ({
+  history,
+  showDropdownMenu,
+  showLogoutOption,
+  showProfileOption,
+}) => {
   const handleLogoutClick = () => {
     localStorage.removeItem("TOKEN");
     history.push("/");
+  };
+
+  const handleProfileClick = () => {
+    const token = localStorage.getItem("TOKEN");
+
+    if (token) {
+      const loggedInUserData = decode(token, process.env.REACT_APP_JWT_SECRET);
+      history.push(`/profile/${loggedInUserData._id}`);
+    }
   };
 
   const getExtraOptions = () => {
@@ -24,6 +39,19 @@ export const Navbar = ({ history, showDropdownMenu, showLogoutOption }) => {
           onClick={() => handleLogoutClick()}
         >
           Logout
+        </Button>
+      );
+    }
+
+    if (showProfileOption) {
+      options.push(
+        <Button
+          transparent
+          shape="round"
+          textColor="dark"
+          onClick={() => handleProfileClick()}
+        >
+          Profile
         </Button>
       );
     }

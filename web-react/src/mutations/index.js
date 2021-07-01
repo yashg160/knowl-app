@@ -41,3 +41,16 @@ export const CREATE_ANSWER = gql`
     }
   }
 `;
+
+export const UPDATE_PROFILE = gql`
+  mutation UpdateProfile($email: String!, $name: String!) {
+    updateProfile(email: $email, name: $name) {
+      error {
+        message
+      }
+      operation
+      status
+      code
+    }
+  }
+`;

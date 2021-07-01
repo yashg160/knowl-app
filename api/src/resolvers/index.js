@@ -345,6 +345,55 @@ const resolvers = {
         };
       }
     },
+
+    updateProfile: async (parent, args, context, info) => {
+      if (!context.user) {
+        return {
+          user: null,
+          error: {
+            message: "User is not authenticated",
+          },
+          code: "NOT_COMPLETE",
+          operation: "OP_PUBLISH_POST",
+          status: "NOT_COMPLETE",
+        };
+      }
+
+      try {
+        const user = context.user;
+
+        const session = await context.driver.session();
+
+        const updateCypher =
+          "MATCH (n {_id: $userId}) SET n.name=$name, n.email=$email RETURN n";
+        const updateParams = {
+          userId: user._id,
+          email: args.email,
+          name: args.name,
+        };
+
+        await session.run(updateCypher, updateParams);
+
+        return {
+          error: null,
+          code: "OK",
+          operation: "OP_UPDATE_USER",
+          status: "OK",
+          user: [],
+        };
+      } catch (err) {
+        console.error(err);
+        return {
+          error: {
+            message: "An error occurred",
+          },
+          code: "ER_SERVER",
+          operation: "OP_UPDATE_USER",
+          status: "NOT_COMPLETE",
+          user: [],
+        };
+      }
+    },
   },
   Query: {
     signInUser: async (parent, args, context, info) => {

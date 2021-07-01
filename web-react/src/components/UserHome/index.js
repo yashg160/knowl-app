@@ -71,7 +71,7 @@ function UserHome(props) {
 
   return (
     <>
-      <Navbar showLogoutOption history={props.history} />
+      <Navbar showLogoutOption showProfileOption history={props.history} />
       <div className="globalContainer">
         <div className={cx(styles.headerWrapper)}>
           <Title>Top Questions</Title>
