@@ -62,7 +62,14 @@ export const Navbar = ({
   return (
     <PageHeader
       className="site-page-header-responsive"
-      title="knowl.io"
+      title={
+        <a
+          href="/home"
+          style={{ textDecoration: "none", outline: "none", color: "black" }}
+        >
+          knowl.io
+        </a>
+      }
       style={{
         borderBottom: "#ededed 1px solid",
       }}

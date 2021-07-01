@@ -181,6 +181,21 @@ function UserProfile(props) {
             >
               <Text style={{ fontSize: "16px" }}>Posts</Text>
             </div>
+
+            <div
+              className={cx(styles.selectItem, {
+                [styles.selected]: state.selectedSideItem === "SPACES",
+              })}
+              onClick={() => {
+                props.history.push("/selectSpaces");
+                setState((state) => ({
+                  ...state,
+                  selectedSideItem: "SPACES",
+                }));
+              }}
+            >
+              <Text style={{ fontSize: "16px" }}>Spaces</Text>
+            </div>
           </div>
           <div className={cx(styles.mainContent)}>
             {state.selectedSideItem === "EDIT_PROFILE" && (
