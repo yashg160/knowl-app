@@ -67,3 +67,16 @@ export const UPDATE_QUESTION = gql`
     }
   }
 `;
+
+export const UPDATE_ANSWER = gql`
+  mutation UpdateAnswer($text: String!, $answerId: ID!) {
+    updateAnswer(text: $text, answerId: $answerId) {
+      error {
+        message
+      }
+      operation
+      status
+      code
+    }
+  }
+`;

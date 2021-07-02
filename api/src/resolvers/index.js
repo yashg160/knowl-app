@@ -439,6 +439,51 @@ const resolvers = {
         };
       }
     },
+
+    updateAnswer: async (parent, args, context, info) => {
+      if (!context.user) {
+        return {
+          user: null,
+          error: {
+            message: "User is not authenticated",
+          },
+          code: "NOT_COMPLETE",
+          operation: "OP_UPDATE_POST",
+          status: "NOT_COMPLETE",
+        };
+      }
+
+      try {
+        const session = await context.driver.session();
+
+        const updateCypher =
+          "MATCH (n:Answer {_id: $postId}) SET n.text=$text RETURN n";
+        const updateParams = {
+          postId: args.answerId,
+          text: args.text,
+        };
+
+        await session.run(updateCypher, updateParams);
+
+        return {
+          error: null,
+          code: "OK",
+          operation: "OP_UPDATE_POST",
+          status: "OK",
+          user: [],
+        };
+      } catch (err) {
+        return {
+          error: {
+            message: "An error occurred",
+          },
+          code: "ER_SERVER",
+          operation: "OP_UPDATE_POST",
+          status: "NOT_COMPLETE",
+          user: [],
+        };
+      }
+    },
   },
   Query: {
     signInUser: async (parent, args, context, info) => {
@@ -729,7 +774,6 @@ const resolvers = {
           postedQuestions = [];
 
         userPostsResult.records.forEach((record) => {
-          console.log(record._fields[0].properties);
           if (record._fields[0].properties.label === "answer") {
             postedAnswers.push(record._fields[0].properties);
           } else {

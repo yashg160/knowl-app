@@ -19,6 +19,8 @@ import styles from "./styles/Profile.module.scss";
 function UserProfile(props) {
   const [updateUser] = useMutation(Mutations.UPDATE_PROFILE);
   const [updateQuestion] = useMutation(Mutations.UPDATE_QUESTION);
+  const [updateAnswer] = useMutation(Mutations.UPDATE_ANSWER);
+
   const userProfileResult = useQuery(Queries.GET_USER_PROFILE, {
     variables: {
       userId: props.match.params.userId,
@@ -32,11 +34,15 @@ function UserProfile(props) {
     allowEditProfile: false,
     loading: false,
     selectedSideItem: "EDIT_PROFILE",
-    modalVisible: false,
-    modalLoading: false,
+    editQuestionModalVisible: false,
+    editQuestionModalLoading: false,
     editQuestionId: "",
     editQuestionTitle: "",
     editQuestionText: "",
+    editAnswerModalVisible: false,
+    editAnswerModalLoading: false,
+    editAnswerId: "",
+    editAnswerText: "",
   });
 
   const [name, setName] = useState("");
@@ -116,7 +122,7 @@ function UserProfile(props) {
   const handleSubmitEditQuestion = async () => {
     setState((state) => ({
       ...state,
-      modalLoading: true,
+      editQuestionModalLoading: true,
     }));
 
     try {
@@ -130,7 +136,7 @@ function UserProfile(props) {
 
       setState((state) => ({
         ...state,
-        modalLoading: false,
+        editQuestionModalLoading: false,
       }));
 
       location.reload();
@@ -138,7 +144,38 @@ function UserProfile(props) {
       console.log(err);
       setState((state) => ({
         ...state,
-        modalLoading: false,
+        editQuestionModalLoading: false,
+        showError: true,
+        errorMessage: "An error occurred. Could not update your profile.",
+      }));
+    }
+  };
+
+  const handleSubmitEditAnswer = async () => {
+    setState((state) => ({
+      ...state,
+      editAnswerModalLoading: true,
+    }));
+
+    try {
+      await updateAnswer({
+        variables: {
+          answerId: state.editAnswerId,
+          text: state.editAnswerText,
+        },
+      });
+
+      setState((state) => ({
+        ...state,
+        editAnswerModalLoading: false,
+      }));
+
+      location.reload();
+    } catch (err) {
+      console.log(err);
+      setState((state) => ({
+        ...state,
+        editAnswerModalLoading: false,
         showError: true,
         errorMessage: "An error occurred. Could not update your profile.",
       }));
@@ -170,16 +207,31 @@ function UserProfile(props) {
             </div>
             <div
               className={cx(styles.selectItem, {
-                [styles.selected]: state.selectedSideItem === "POSTS",
+                [styles.selected]:
+                  state.selectedSideItem === "POSTED_QUESTIONS",
               })}
               onClick={() =>
                 setState((state) => ({
                   ...state,
-                  selectedSideItem: "POSTS",
+                  selectedSideItem: "POSTED_QUESTIONS",
                 }))
               }
             >
-              <Text style={{ fontSize: "16px" }}>Posts</Text>
+              <Text style={{ fontSize: "16px" }}>Questions</Text>
+            </div>
+
+            <div
+              className={cx(styles.selectItem, {
+                [styles.selected]: state.selectedSideItem === "POSTED_ANSWERS",
+              })}
+              onClick={() =>
+                setState((state) => ({
+                  ...state,
+                  selectedSideItem: "POSTED_ANSWERS",
+                }))
+              }
+            >
+              <Text style={{ fontSize: "16px" }}>Answers</Text>
             </div>
 
             <div
@@ -256,32 +308,22 @@ function UserProfile(props) {
               </>
             )}
 
-            {state.selectedSideItem === "POSTS" && (
+            {state.selectedSideItem === "POSTED_QUESTIONS" && (
               <>
                 <Title level={2} style={{ fontWeight: 500 }}>
-                  Your Posts
+                  Posted Questions
                 </Title>
 
                 <div className={cx(styles.postDataContent)}>
                   <div className={cx(styles.dataItem)}>
-                    <Title level={3} style={{ fontWeight: 500 }}>
-                      Questions
-                    </Title>
                     <Text style={{ fontSize: "24px" }}>
-                      {userProfileResult.data.getUserProfile.numPosts}
-                    </Text>
-                  </div>
-
-                  <div className={cx(styles.dataItem)}>
-                    <Title level={3} style={{ fontWeight: 500 }}>
-                      Answers
-                    </Title>
-                    <Text style={{ fontSize: "24px" }}>
-                      {userProfileResult.data.getUserProfile.numAnswers}
+                      {userProfileResult.data.getUserProfile.numPosts} posted
+                      till date
                     </Text>
                   </div>
                 </div>
 
+                <Title level={3} style={{ fontWeight: 500 }}></Title>
                 <div className={cx(styles.userPosts)}>
                   {userProfileResult.data.getUserProfile.posts.map(
                     (post, index) => (
@@ -291,7 +333,7 @@ function UserProfile(props) {
                         onClick={() =>
                           setState((state) => ({
                             ...state,
-                            modalVisible: true,
+                            editQuestionModalVisible: true,
                             editQuestionId: post._id,
                             editQuestionTitle: post.title,
                             editQuestionText: post.text,
@@ -307,35 +349,79 @@ function UserProfile(props) {
                 </div>
               </>
             )}
+
+            {state.selectedSideItem === "POSTED_ANSWERS" && (
+              <>
+                <Title level={2} style={{ fontWeight: 500 }}>
+                  Your Answers
+                </Title>
+
+                <div className={cx(styles.postDataContent)}>
+                  <div className={cx(styles.dataItem)}>
+                    <Text style={{ fontSize: "24px" }}>
+                      {userProfileResult.data.getUserProfile.numAnswers} posted
+                      till date
+                    </Text>
+                  </div>
+                </div>
+
+                <Title level={3} style={{ fontWeight: 500 }}></Title>
+                <div className={cx(styles.userPosts)}>
+                  {userProfileResult.data.getUserProfile.answers.map(
+                    (answer, index) => (
+                      <div
+                        key={answer._id}
+                        className={cx(styles.post)}
+                        onClick={() =>
+                          setState((state) => ({
+                            ...state,
+                            editAnswerModalVisible: true,
+                            editAnswerId: answer._id,
+                            editAnswerText: answer.text,
+                          }))
+                        }
+                      >
+                        {answer.text?.length > 150 ? (
+                          <Text className={cx(styles.postText)}>
+                            {`${answer.text.substring(0, 200)}...`}
+                          </Text>
+                        ) : (
+                          <Text className={cx(styles.postText)}>
+                            {answer.text}
+                          </Text>
+                        )}
+                      </div>
+                    )
+                  )}
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>
       <Modal
         title="Edit this question"
-        visible={state.modalVisible}
+        visible={state.editQuestionModalVisible}
         onOk={() => handleSubmitEditQuestion()}
-        confirmLoading={state.modalLoading}
+        confirmLoading={state.editQuestionModalLoading}
         onCancel={() =>
           setState((state) => ({
             ...state,
-            modalVisible: false,
-            modalLoading: false,
+            editQuestionModalVisible: false,
+            editQuestionModalLoading: false,
           }))
         }
         cancelButtonProps={{
-          disabled: state.modalLoading,
+          disabled: state.editQuestionModalLoading,
           className: cx(styles.questionModalCancelButton),
         }}
         okButtonProps={{
           className: cx(styles.questionModalOkButton),
         }}
         cancelText="Back"
-        closable={!state.modalLoading}
-        maskClosable={!state.modalLoading}
+        closable={!state.editQuestionModalLoading}
+        maskClosable={!state.editQuestionModalLoading}
       >
-        {/* <Title level={4} className={cx(styles.questionModalBodyHeading)}>
-          {state.question}
-        </Title> */}
         <TextArea
           value={state.editQuestionTitle}
           onChange={(e) => {
@@ -359,6 +445,43 @@ function UserProfile(props) {
           rows={10}
           className={cx(styles.questionModalBodyInput)}
           placeholder="Edit this question....Do not submit an empty value."
+        />
+      </Modal>
+
+      <Modal
+        title="Edit this answer post"
+        visible={state.editAnswerModalVisible}
+        onOk={() => handleSubmitEditAnswer()}
+        confirmLoading={state.editAnswerModalLoading}
+        onCancel={() =>
+          setState((state) => ({
+            ...state,
+            editAnswerModalVisible: false,
+            editAnswerModalLoading: false,
+          }))
+        }
+        cancelButtonProps={{
+          disabled: state.editAnswerModalLoading,
+          className: cx(styles.questionModalCancelButton),
+        }}
+        okButtonProps={{
+          className: cx(styles.questionModalOkButton),
+        }}
+        cancelText="Back"
+        closable={!state.editAnswerModalLoading}
+        maskClosable={!state.editAnswerModalLoading}
+      >
+        <TextArea
+          value={state.editAnswerText}
+          onChange={(e) =>
+            setState((state) => ({
+              ...state,
+              editAnswerText: e.target.value,
+            }))
+          }
+          rows={10}
+          className={cx(styles.questionModalBodyInput)}
+          placeholder="Edit this answer....Do not submit an empty value."
         />
       </Modal>
     </>
