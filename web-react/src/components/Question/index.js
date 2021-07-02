@@ -121,7 +121,7 @@ function QuestionPost(props) {
   // Loading complete
   return (
     <>
-      <Navbar />
+      <Navbar showProfileOption history={props.history} />
       <div className="globalContainer">
         <div className={cx(styles.headerWrapper)}>
           <Title>{state.question.title}</Title>

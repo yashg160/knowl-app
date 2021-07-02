@@ -239,7 +239,7 @@ function UserProfile(props) {
                 [styles.selected]: state.selectedSideItem === "SPACES",
               })}
               onClick={() => {
-                props.history.push("/selectSpaces");
+                props.history.push("/selectSpaces?ref=USER_PROFILE");
                 setState((state) => ({
                   ...state,
                   selectedSideItem: "SPACES",

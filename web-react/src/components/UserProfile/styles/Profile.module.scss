@@ -3,16 +3,19 @@
   width: 100%;
 
   .sidePanel {
-    padding: 40px 40px 0px 0px;
-    position: absolute;
-    width: 320px;
-    left: 0px;
     top: 0px;
+    left: 0px;
+    width: 320px;
+    height: 100vh;
+    position: absolute;
+    padding: 40px 0px 0px 0px;
+    border-right: 1px solid rgb(243, 243, 243);
 
     .selectItem {
       cursor: pointer;
       padding: 8px 16px;
-      border-radius: 8px;
+      border-top-left-radius: 8px;
+      border-bottom-left-radius: 8px;
       margin-bottom: 8px;
       background: white;
       transition: 0.2s all ease-in-out;
@@ -24,11 +27,12 @@
   }
 
   .mainContent {
-    position: absolute;
-    left: 320px;
     top: 0px;
+    left: 320px;
+    height: 100vh;
     max-width: 640px;
-    padding: 40px 0px 0px 0px;
+    position: absolute;
+    padding: 40px 0px 0px 40px;
 
     .postDataContent {
       display: flex;
